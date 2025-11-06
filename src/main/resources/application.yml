@@ -1,0 +1,14 @@
+spring:
+  data:
+    redis:
+      host: ilovepc.duckdns.org
+      port: 26379
+
+# HS512 ????? ?? 64byte ??? secret key (??)
+jwt:
+  secret: 'aYourVeryLongAndComplexSecretKeyForHS512AlgorithmMustBeAtLeast64Bytes'
+  access-token-validity: 3600000 # 1?? (ms)
+  refresh-token-validity: 604800000 # 7? (ms)
+
+server:
+  port: 9495
