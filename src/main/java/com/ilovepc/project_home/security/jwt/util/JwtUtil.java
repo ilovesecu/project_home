@@ -1,4 +1,4 @@
-package com.ilovepc.project_home.security.util.jwt;
+package com.ilovepc.project_home.security.jwt.util;
 
 import com.ilovepc.project_home.security.vo.user.Role;
 import io.jsonwebtoken.*;
