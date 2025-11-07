@@ -1,4 +1,4 @@
-package com.ilovepc.project_home.security.vo.user;
+package com.ilovepc.project_home.config.security.vo;
 
 public enum Role {
     ROLE_ADMIN, //관리자

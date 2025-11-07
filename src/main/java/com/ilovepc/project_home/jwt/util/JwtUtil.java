@@ -1,6 +1,6 @@
-package com.ilovepc.project_home.security.jwt.util;
+package com.ilovepc.project_home.jwt.util;
 
-import com.ilovepc.project_home.security.vo.user.Role;
+import com.ilovepc.project_home.config.security.vo.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
