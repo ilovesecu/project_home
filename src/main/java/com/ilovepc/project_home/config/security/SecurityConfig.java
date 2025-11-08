@@ -1,5 +1,6 @@
-package com.ilovepc.project_home.config.security.config;
+package com.ilovepc.project_home.config.security;
 
+import com.ilovepc.project_home.config.security.filter.JwtAuthenticationFilter;
 import com.ilovepc.project_home.jwt.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -32,6 +34,10 @@ public class SecurityConfig {
 
         //세션 STATE_LESS로 변경 (JWT 사용)
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        //커스텀 JWT 필터 추가
+        //JwtFilter를 UsernamePasswordAuthenticationFilter앞에 추가
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
