@@ -1,6 +1,7 @@
 package com.ilovepc.project_home.config.security;
 
 import com.ilovepc.project_home.config.security.filter.JwtAuthenticationFilter;
+import com.ilovepc.project_home.config.security.vo.Role;
 import com.ilovepc.project_home.jwt.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,36 @@ public class SecurityConfig {
         //JwtFilter를 UsernamePasswordAuthenticationFilter앞에 추가
         http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
+        //경로별 인가(Authorization) 설정
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                // /api/guest/** 경로는 GUEST, USER, ADMIN 모두 접근 가능
+                .requestMatchers("/api/guest/**").hasAnyRole(
+                        Role.ROLE_GUEST.name().replace("ROLE_", ""),
+                        Role.ROLE_USER.name().replace("ROLE_", ""),
+                        Role.ROLE_ADMIN.name().replace("ROLE_", "")
+                )
+
+                // /api/user/** 경로는 USER, ADMIN 접근 가능
+                .requestMatchers("/api/user/**").hasAnyRole(
+                        Role.ROLE_USER.name().replace("ROLE_", ""),
+                        Role.ROLE_ADMIN.name().replace("ROLE_", "")
+                )
+
+                // /api/admin/** 경로는 ADMIN만 접근 가능
+                .requestMatchers("/api/admin/**").hasRole(
+                        Role.ROLE_ADMIN.name().replace("ROLE_", "")
+                )
+
+                // 그 외 모든 요청은 인증 필요
+                .anyRequest().authenticated()
+        );
+
+        // (추가) 커스텀 예외 처리 핸들러 (선택)
+        // http.exceptionHandling(ex -> ex
+        //         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // 401
+        //         .accessDeniedHandler(new JwtAccessDeniedHandler())        // 403
+        // );
         return http.build();
     }
 }

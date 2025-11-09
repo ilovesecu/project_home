@@ -1,9 +1,11 @@
 package com.ilovepc.project_home.config.security.vo;
 
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 public class User {
     private Long userNo;
     private String username;
