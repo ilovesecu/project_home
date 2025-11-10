@@ -4,27 +4,32 @@ spring:
       host: ilovepc.duckdns.org
       port: 26379
 
-# HS512 ????? ?? 64byte ??? secret key (??)
+
 jwt:
-  secret: 'aYourVeryLongAndComplexSecretKeyForHS512AlgorithmMustBeAtLeast64Bytes'
+  secret: 'YVlvdXJWZXJ5TG9uZ0FuZENvbXBsZXhTZWNyZXRLZXlGb3JIUzUxMkFsZ29yaXRobU11c3RCZUF0TGVhc3Q2NEJ5dGVz'
   access-token-validity: 3600000 # 1?? (ms)
   refresh-token-validity: 604800000 # 7? (ms)
 
-#?? ????
+rdb:
+  master:
+    jdbcUrl: jdbc:log4jdbc:mysql://ilovepc.duckdns.org:23306
+
+
+
 resilience4j:
   circuitbreaker:
     configs:
-      default: # ?? ??
+      default:
         register-health-indicator: true
-        sliding-window-type: COUNT_BASED # ?? ???? ??? ??
-        sliding-window-size: 10          # ?? 10?? ??? ????
-        failure-rate-threshold: 50       # 50% (?, 5?) ?? ????
-        minimum-number-of-calls: 5       # (?? 5? ??? ??? ?? ??)
-        wait-duration-in-open-state: 60s # ??? 60?? OPEN ??? ?? (3??? ??)
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 60s
 
     instances:
-       redis-set: # ? ??? ???? ??? ????.
-         base-config: default # ? 'default' ??? ??
+       redis-set:
+         base-config: default
 
 
 server:
