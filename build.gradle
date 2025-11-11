@@ -41,6 +41,9 @@ dependencies {
     //ENC
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
 
+    //VALIDATE
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     //RDB
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'com.zaxxer:HikariCP:6.2.1'

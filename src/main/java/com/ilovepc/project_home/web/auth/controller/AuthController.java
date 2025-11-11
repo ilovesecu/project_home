@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.auth.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,4 +20,8 @@ public class AuthController {
         return "Hello World";
     }
 
+    @PostMapping("/v1/signup")
+    public String signup() {
+        return "signup";
+    }
 }
