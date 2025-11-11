@@ -1,6 +1,5 @@
 package com.ilovepc.project_home.config.security.vo;
 
-import com.ilovepc.project_home.config.security.vo.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,7 +32,7 @@ public class HomeProjectUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return user.getEmail();
     }
 
     @Override

@@ -42,13 +42,13 @@ public class JwtUtil {
     }
 
     //엑세스 토큰 생성
-    public String createAccessToken(String username, List<Role> roles) {
-        return createToken(username, roles, accessTokenValidity);
+    public String createAccessToken(String email, List<Role> roles) {
+        return createToken(email, roles, accessTokenValidity);
     }
 
     //리프레시 토큰 생성
-    public String createRefreshToken(String username, List<Role> roles) {
-        return createToken(username, roles, refreshTokenValidity);
+    public String createRefreshToken(String email, List<Role> roles) {
+        return createToken(email, roles, refreshTokenValidity);
     }
 
     //헤더에서 토큰 추출
@@ -110,12 +110,12 @@ public class JwtUtil {
     }
 
     //토큰 만들어주는 메소드
-    private String createToken(String username, List<Role> roles, long validity) {
+    private String createToken(String email, List<Role> roles, long validity) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + validity);
 
         JwtBuilder builder = Jwts.builder()
-                .setSubject(username)   //토큰 주체
+                .setSubject(email)   //토큰 주체
                 .setIssuedAt(now)       //토큰 발급시간
                 .setExpiration(expiration) //토큰 만료시간
                 .signWith(key, SignatureAlgorithm.HS512);

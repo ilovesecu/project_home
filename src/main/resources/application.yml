@@ -13,8 +13,10 @@ jwt:
 rdb:
   master:
     jdbcUrl: jdbc:log4jdbc:mysql://ilovepc.duckdns.org:23306
-
-
+    username: 'ENC(qRj4igOru2fvSCXeo/ncpw==)'
+    password: 'ENC(UQNhMbgcTtv2ryTRjTSV2iPjAX2eo6wo)'
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
 
 resilience4j:
   circuitbreaker:
