@@ -12,7 +12,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties("rdb.master")
-@MapperScan(annotationClass = HomeMaster.class, sqlSessionFactoryRef = "masterSessionFactory")
+@MapperScan(
+        basePackages = "com.ilovepc.project_home.repository", //이거 없으면 Bean 생성못함..
+        annotationClass = HomeMaster.class,
+        sqlSessionFactoryRef = "masterSessionFactory")
 public class MysqlConfig extends HikariConfig {
     @Value("${mybatis.mapper-locations}")
     String mapperLocation;

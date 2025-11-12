@@ -12,8 +12,16 @@ public class SignUpRequest {
     private String email;
     @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
     @Size(min = 5, message = "비밀번호는 5자 이상입니다.")
-    private String password;
+    private String plainPassword;
     @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
     @Size(min = 2, max=10, message="닉네임은 2~10자 사이 입니다.")
     private String nickname;
+
+    public SignUpParam makeParam(){
+        return SignUpParam
+                .builder()
+                .email(this.email)
+                .nickname(this.nickname)
+                .build();
+    }
 }
