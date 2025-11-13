@@ -1,6 +1,17 @@
 // Jenkinsfile
 pipeline {
-    agent any
+    //Jenkinsfile에서 agent any를 사용하면, 빌드 작업은 Jenkins 메인 컨트롤러(현재 jenkins/jenkins:lts 컨테이너)에서 실행됩니다. 하지만 이 기본 이미지에는 Jenkins만 들어있고 Docker CLI 도구는 포함되어 있지 않습니다.
+    //agent any
+    //빌드가 시작될 때마다 docker 명령어가 이미 설치된 docker:latest 같은 이미지를 새로 띄우고, 그 컨테이너 안에서 빌드 작업을 수행
+    // [수정] 'agent any' 대신, docker 명령어가 있는
+    // 'docker:latest' 이미지를 빌드 에이전트로 사용합니다.
+    agent {
+        docker {
+            image 'docker:latest'
+            // [중요] 이 에이전트에게도 호스트의 docker.sock을 연결(DooD)
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     // 1단계: Jenkins Credential에 등록한 비밀 정보들을 변수로 불러옵니다.
     environment {
