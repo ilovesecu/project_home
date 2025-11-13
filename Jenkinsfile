@@ -29,7 +29,9 @@ pipeline {
         stage('Spring Boot Build') {
             steps {
                 sh "chmod +x ./gradlew"
-                sh "./gradlew build"
+                // (수정) Jenkins의 JASYPT_KEY 변수를
+                // JASYPT_ENCRYPTOR_PASSWORD라는 이름의 환경 변수로 주입하여 빌드 실행
+                sh "JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} ./gradlew build"
             }
         }
 
