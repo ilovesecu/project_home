@@ -1,0 +1,41 @@
+spring:
+  data:
+    redis:
+      # [변경] 호스트명은 컨테이너 이름(HomeRedis)으로 변경
+      host: HomeRedis
+      # [변경] 포트는 컨테이너 내부 포트(6379)로 변경
+      port: 6379
+
+
+jwt:
+  secret: 'YVlvdXJWZXJ5TG9uZ0FuZENvbXBsZXhTZWNyZXRLZXlGb3JIUzUxMkFsZ29yaXRobU11c3RCZUF0TGVhc3Q2NEJ5dGVz'
+  access-token-validity: 3600000 # 1?? (ms)
+  refresh-token-validity: 604800000 # 7? (ms)
+
+rdb:
+  master:
+    # [변경] 호스트명은 컨테이너 이름(HomeMysql), 포트는 컨테이너 내부 포트(3306)로 변경
+    jdbcUrl: jdbc:log4jdbc:mysql://HomeMysql:3306
+    username: 'ENC(qRj4igOru2fvSCXeo/ncpw==)'
+    password: 'ENC(UQNhMbgcTtv2ryTRjTSV2iPjAX2eo6wo)'
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 60s
+
+    instances:
+       redis-set:
+         base-config: default
+
+
+server:
+  port: 9495

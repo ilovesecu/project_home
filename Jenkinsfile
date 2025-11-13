@@ -64,6 +64,7 @@ pipeline {
                 sh "docker run -d --name ${CONTAINER_NAME} \
                    -p 9495:9495 \
                    -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
+                   -e SPRING_PROFILES_ACTIVE=real \
                    ${IMAGE_NAME}"
             }
         }
