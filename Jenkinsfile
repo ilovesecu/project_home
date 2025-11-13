@@ -51,7 +51,7 @@ pipeline {
                 // Djasypt.encryptor.password=... 보다 우선하여 자동으로 인식합니다.
                 // -e 옵션으로 Jenkins 변수(${JASYPT_KEY})를 Docker 컨테이너의 환경변수로 전달합니다.
                 sh "docker run -d --name ${CONTAINER_NAME} \
-                   -p 8080:8080 \
+                   -p 9495:9495 \
                    -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
                    ${IMAGE_NAME}"
             }
