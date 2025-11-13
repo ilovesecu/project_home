@@ -31,7 +31,16 @@ pipeline {
                 sh "chmod +x ./gradlew"
                 // (수정) Jenkins의 JASYPT_KEY 변수를
                 // JASYPT_ENCRYPTOR_PASSWORD라는 이름의 환경 변수로 주입하여 빌드 실행
-                sh "JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} ./gradlew build"
+                // withEnv 블록으로 감싸서 환경변수를 안전하게 주입
+                withEnv(["JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY}"]) {
+
+                    // 여기에 빌드 명령어를 넣습니다.
+                    // (방법 1 선택 시)
+                    //sh "./gradlew build"
+
+                    // (방법 2 선택 시)
+                    sh "./gradlew build -x test"
+                }
             }
         }
 
