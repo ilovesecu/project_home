@@ -40,12 +40,11 @@ pipeline {
 
         // 3단계: Spring Boot 빌드 --> [JAVA] 컨테이너 사용
         stage('Spring Boot Build') {
-            agent {
-                docker {
-                    // Java 17이 포함된 공식 이미지 사용 (본인 프로젝트 버전에 맞게 변경 가능)
-                    image 'eclipse-temurin:21'
-                }
+        agent {
+            docker {
+                image 'eclipse-temurin:21'
             }
+        }
             steps {
                 sh "chmod +x ./gradlew"
                 // (수정) Jenkins의 JASYPT_KEY 변수를
@@ -68,7 +67,7 @@ pipeline {
             Jenkins는 똑똑해서, 앞 단계(Java 컨테이너)에서 빌드한 결과물(.jar 파일)을 다음 단계(Docker 컨테이너)에서도 볼 수 있도록 자동으로 작업 공간을 공유해 줍니다.
         */
         stage('Docker Build') {
-            agent{
+            agent {
                 docker {
                     image: 'docker:latest'
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
