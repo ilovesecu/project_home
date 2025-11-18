@@ -66,7 +66,7 @@ pipeline {
         /*
             Jenkins는 똑똑해서, 앞 단계(Java 컨테이너)에서 빌드한 결과물(.jar 파일)을 다음 단계(Docker 컨테이너)에서도 볼 수 있도록 자동으로 작업 공간을 공유해 줍니다.
         */
-        stage('Docker Build') {
+        stage('Docker Build & Deploy') {
             agent {
                 docker {
                     // [수정] -u root 옵션 추가 (이 컨테이너를 root 권한으로 실행)
@@ -75,26 +75,20 @@ pipeline {
                 }
             }
             steps {
+                // ---빌드 부분---
                 sh "docker build -t ${IMAGE_NAME} ."
-            }
-        }
-
-        // 5단계: Docker 배포 (Jasypt 키 주입)
-        stage('Deploy to Docker') {
-            steps {
+                // --- 배포 부분 ---
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm ${CONTAINER_NAME} || true"
 
-                // (4) Jasypt 키 주입:
-                // Spring Boot는 JASYPT_ENCRYPTOR_PASSWORD 환경변수를
-                // Djasypt.encryptor.password=... 보다 우선하여 자동으로 인식합니다.
-                // -e 옵션으로 Jenkins 변수(${JASYPT_KEY})를 Docker 컨테이너의 환경변수로 전달합니다.
-                sh "docker run -d --name ${CONTAINER_NAME} \
-                   -p 9495:9495 \
-                   -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
-                   -e SPRING_PROFILES_ACTIVE=real \
-                   --network=home-project-network \
-                   ${IMAGE_NAME}"
+                withEnv(["JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY}"]) {
+                    sh "docker run -d --name ${CONTAINER_NAME} \
+                       -p 9495:9495 \
+                       -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
+                       -e SPRING_PROFILES_ACTIVE=real \
+                       --network=home-project-network \
+                       ${IMAGE_NAME}"
+                }
             }
         }
     }
