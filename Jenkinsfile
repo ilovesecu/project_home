@@ -93,7 +93,7 @@ pipeline {
                    -p 9495:9495 \
                    -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
                    -e SPRING_PROFILES_ACTIVE=real \
-                   --network=home-project-network
+                   --network=home-project-network \
                    ${IMAGE_NAME}"
             }
         }
