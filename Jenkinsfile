@@ -21,7 +21,7 @@ pipeline {
         JASYPT_KEY = credentials('jasypt-password')
 
         // (2) Docker 이미지/컨테이너 이름 설정:
-        IMAGE_NAME = "homeProjectApp"
+        IMAGE_NAME = "home_project_app"
         CONTAINER_NAME = "homeProjectContainer"
     }
 
@@ -93,6 +93,7 @@ pipeline {
                    -p 9495:9495 \
                    -e JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_KEY} \
                    -e SPRING_PROFILES_ACTIVE=real \
+                   --network=home-project-network
                    ${IMAGE_NAME}"
             }
         }
