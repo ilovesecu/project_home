@@ -71,7 +71,7 @@ pipeline {
                 docker {
                     // [수정] -u root 옵션 추가 (이 컨테이너를 root 권한으로 실행)
                     image 'docker:latest'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock -e DOCKER_API_VERSION=1.43'
                 }
             }
             steps {
