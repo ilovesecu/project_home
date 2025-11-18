@@ -40,11 +40,11 @@ pipeline {
 
         // 3단계: Spring Boot 빌드 --> [JAVA] 컨테이너 사용
         stage('Spring Boot Build') {
-        agent {
-            docker {
-                image 'eclipse-temurin:21'
+            agent {
+                docker {
+                    image 'eclipse-temurin:21'
+                }
             }
-        }
             steps {
                 sh "chmod +x ./gradlew"
                 // (수정) Jenkins의 JASYPT_KEY 변수를
