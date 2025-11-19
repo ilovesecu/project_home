@@ -5,4 +5,5 @@ import lombok.Builder;
 @Builder
 public class SignInParam {
     private String email;
+    private String memIp;
 }

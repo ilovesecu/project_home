@@ -4,8 +4,6 @@ import lombok.Data;
 
 @Data
 public class SignInResult {
-    private String email;
-    private String password;
-    private String nickname;
+    private SignInRetValCode resultCode; // DB 컬럼 retVal에 맵핑
     private int userNo;
 }
