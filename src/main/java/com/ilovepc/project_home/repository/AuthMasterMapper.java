@@ -23,5 +23,5 @@ public interface AuthMasterMapper {
     SignInResult pSignIn(SignInParam param);
 
     @Select("CALL home_project.p_user_sel(#{userNo})")
-    User pUserSel(String userNo);
+    User pUserSel(int userNo);
 }

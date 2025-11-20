@@ -7,12 +7,12 @@ import java.util.List;
 
 @Getter
 public class User {
-    private Long userNo;
+    private int userNo;
     private String email;
     private String password;
     private String nickname;
     private String createdAt;
-    private String updatedAt;
+    private String emailVerifiedYn;
 
     private List<Role> roles;
 
