@@ -42,12 +42,12 @@ public class JwtUtil {
     }
 
     //엑세스 토큰 생성
-    public String createAccessToken(String email, List<Role> roles) {
+    public String createAccessToken(String email, Collection<? extends GrantedAuthority> roles) {
         return createToken(email, roles, accessTokenValidity);
     }
 
     //리프레시 토큰 생성
-    public String createRefreshToken(String email, List<Role> roles) {
+    public String createRefreshToken(String email, Collection<? extends GrantedAuthority> roles) {
         return createToken(email, roles, refreshTokenValidity);
     }
 
@@ -110,7 +110,7 @@ public class JwtUtil {
     }
 
     //토큰 만들어주는 메소드
-    private String createToken(String email, List<Role> roles, long validity) {
+    private String createToken(String email, Collection<? extends GrantedAuthority> roles, long validity) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + validity);
 
@@ -123,7 +123,7 @@ public class JwtUtil {
         // Role이 있다면 claims에 추가한다.
         if(roles != null && !roles.isEmpty()) {
             String authorities = roles.stream()
-                    .map(Role::name)
+                    .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(","));
             builder.claim(AUTHORITIES_KEY, authorities); //커스텀 클레임을 추가
         }

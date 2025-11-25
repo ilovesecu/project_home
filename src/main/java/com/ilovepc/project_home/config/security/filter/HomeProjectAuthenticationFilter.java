@@ -20,6 +20,24 @@ import java.io.IOException;
 인증 담당	개발자가 직접 passwordEncoder.matches() 작성	        **AuthenticationManager**에게 위임 (자동)
 성공 후 처리	Controller에서 토큰 만들어서 리턴	                    **SuccessHandler**에서 토큰 만들어서 리턴
 특징	        코드가 직관적이나 Security의 강력한 기능을 100% 못 씀	    Security 표준 구조. 확장성 좋음 (권장)
+
+
+
+
+2. JWT 환경에서의 두 가지 케이스
+보통 JWT 프로젝트에서는 이 구조가 "최초 로그인(토큰 발급)" 시에 주로 사용됩니다.
+
+로그인 시 (토큰 발급):
+
+사용자 ID/PW 전송 -> SISOAuthenticationFilter 동작 -> Provider가 DB 확인 -> 성공 시 JWT 발급. (작성하신 코드가 이 역할을 수행합니다.)
+
+API 요청 시 (토큰 검증):
+
+헤더에 JWT 포함 전송 -> JwtAuthorizationFilter(별도 작성 필요) 동작 -> 토큰 파싱 -> SecurityContext에 강제 주입.
+
+참고: API 요청 시에는 성능을 위해 AuthenticationManager를 거치지 않고 필터에서 바로 검증 후 끝내는 경우가 많습니다.
+
+
  */
 public class HomeProjectAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     /*여기서 사용자의 로그인 요청을 가로채서 AuthenticationManager에게 전달!*/

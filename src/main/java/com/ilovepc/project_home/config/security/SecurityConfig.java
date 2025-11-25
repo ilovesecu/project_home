@@ -1,25 +1,35 @@
 package com.ilovepc.project_home.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationProvider;
+import com.ilovepc.project_home.config.security.filter.HomeProjectAuthenticationFilter;
 import com.ilovepc.project_home.config.security.filter.JwtAuthenticationFilter;
 import com.ilovepc.project_home.config.security.vo.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 //@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final HomeProjectUserDetailsService homeProjectUserDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -28,8 +38,24 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+        //1. Custom Provider 생성 및 DI
+        HomeProjectAuthenticationProvider provider = new HomeProjectAuthenticationProvider(homeProjectUserDetailsService, passwordEncoder());
+        
+        //2. ProviderManager(AuthenticationManager 구현체)에 Provider 등록
+        ProviderManager providerManager = new ProviderManager(List.of(provider));
+        //3. 인증 성공 후 비밀번호 메모리에서 삭제
+        providerManager.setEraseCredentialsAfterAuthentication(true);
+        return providerManager;
+
+        //return authenticationConfiguration.getAuthenticationManager(); //기존 기본 Manager
     }
+
+    @Bean
+    public HomeProjectAuthenticationFilter  homeProjectAuthenticationFilter() throws Exception {
+        HomeProjectAuthenticationFilter homeProjectAuthenticationFilter = new HomeProjectAuthenticationFilter(objectMapper);
+        return null;
+    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

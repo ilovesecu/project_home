@@ -2,13 +2,10 @@ package com.ilovepc.project_home.config.security.vo;
 
 import lombok.Builder;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HomeProjectUserDetails implements UserDetails {
     //private final User user;
