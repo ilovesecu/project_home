@@ -1,10 +1,14 @@
 package com.ilovepc.project_home.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationFailureHandler;
 import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationProvider;
+import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationSuccessHandler;
 import com.ilovepc.project_home.config.security.filter.HomeProjectAuthenticationFilter;
 import com.ilovepc.project_home.config.security.filter.JwtAuthenticationFilter;
 import com.ilovepc.project_home.config.security.vo.Role;
+import com.ilovepc.project_home.jwt.service.RefreshTokenService;
+import com.ilovepc.project_home.jwt.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +33,8 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final HomeProjectUserDetailsService homeProjectUserDetailsService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -37,7 +43,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager() throws Exception {
         //1. Custom Provider 생성 및 DI
         HomeProjectAuthenticationProvider provider = new HomeProjectAuthenticationProvider(homeProjectUserDetailsService, passwordEncoder());
         
@@ -52,8 +58,16 @@ public class SecurityConfig {
 
     @Bean
     public HomeProjectAuthenticationFilter  homeProjectAuthenticationFilter() throws Exception {
-        HomeProjectAuthenticationFilter homeProjectAuthenticationFilter = new HomeProjectAuthenticationFilter(objectMapper);
-        return null;
+        HomeProjectAuthenticationFilter filter = new HomeProjectAuthenticationFilter(objectMapper);
+        // Manager 주입
+        filter.setAuthenticationManager(authenticationManager());
+        //Handler 주입
+        filter.setAuthenticationSuccessHandler(new HomeProjectAuthenticationSuccessHandler(jwtUtil, refreshTokenService, objectMapper));
+        filter.setAuthenticationFailureHandler(new HomeProjectAuthenticationFailureHandler(objectMapper));
+
+        // 필요에 따라 SecurityContextRepository도 설정합니다.
+        // filter.setSecurityContextRepository(contextRepository);
+        return filter;
     }
 
 
@@ -70,6 +84,7 @@ public class SecurityConfig {
         //커스텀 JWT 필터 추가
         //JwtFilter를 UsernamePasswordAuthenticationFilter앞에 추가
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(homeProjectAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         //경로별 인가(Authorization) 설정
         http.authorizeHttpRequests(auth -> auth
