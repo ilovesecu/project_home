@@ -1,5 +1,6 @@
 package com.ilovepc.project_home.config.security;
 
+import com.ilovepc.project_home.common.vo.CommonErrCode;
 import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.config.security.vo.User;
 import com.ilovepc.project_home.repository.AuthMasterMapper;
@@ -40,7 +41,14 @@ public class HomeProjectUserDetailsService implements UserDetailsService {
                     .build());
         if(signInResult.getResultCode() != SignInRetValCode.SUCCESS){
             //로그인 되지 않고  SignInRetValCode에 따른 에러 메시지 전송
-            throw new AuthenticationFailException(signInResult.getResultCode().getMessage(),signInResult.getResultCode().getCode());
+            CommonErrCode errCode = switch(signInResult.getResultCode()){
+                case ID_NOT_FOUND -> CommonErrCode.USER_NOT_FOUND;
+                case INACTIVE_USER -> CommonErrCode.USER_INACTIVE;
+                case IP_BLOCK -> CommonErrCode.IP_SUSPENDED;
+                case REST_USER -> CommonErrCode.USER_SUSPENDED;
+                default -> CommonErrCode.UNKNOWN_ERROR;
+            };
+            throw new AuthenticationFailException(errCode);
         }
         //3. 정상유저 조회
         User user = authMasterMapper.pUserSel(signInResult.getUserNo());

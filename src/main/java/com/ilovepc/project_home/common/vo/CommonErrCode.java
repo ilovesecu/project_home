@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum CommonErrCode {
+public enum CommonErrCode implements ErrCode{
     //회원가입 & 로그인 관련
     USER_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH_001", "아이디 혹은 비밀번호가 잘못되었습니다."),
     BAD_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH_002", "아이디 혹은 비밀번호가 잘못되었습니다."),
@@ -16,10 +16,14 @@ public enum CommonErrCode {
 
     //사용자 관련
     IP_SUSPENDED(HttpStatus.UNAUTHORIZED, "USER_001", "정지된 IP 입니다."),
+    USER_SUSPENDED(HttpStatus.UNAUTHORIZED, "USER_002", "휴면회원입니다."),
+    USER_INACTIVE(HttpStatus.UNAUTHORIZED, "USER_003", "휴면회원입니다."),
 
 
     // 시스템 관련
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SYS_001", "서버 내부 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SYS_001", "서버 내부 오류가 발생했습니다."),
+    UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "SYS_002", "알 수 없는 에러");
+
 
     private final HttpStatus httpStatus;
     private final String code;

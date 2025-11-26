@@ -2,6 +2,9 @@ package com.ilovepc.project_home.config.security.authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilovepc.project_home.common.exception.AuthenticationFailException;
+import com.ilovepc.project_home.common.vo.ApiResponse;
+import com.ilovepc.project_home.common.vo.CommonErrCode;
+import com.ilovepc.project_home.common.vo.ErrCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,30 +29,22 @@ public class HomeProjectAuthenticationFailureHandler implements AuthenticationFa
         response.setContentType("applicaiton/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        String errCode = "AUTH_FAIL";
-        String errMessage = "인증 실패";
+        ErrCode errCode = CommonErrCode.UNKNOWN_ERROR;
 
         //우리가 만든 커스텀 예외 확인
         if(exception instanceof AuthenticationFailException authException) {
-            errCode = authException.getErrorCode();
-            errMessage = authException.getMessage();
+            errCode = authException.getErrCode();
         }
         //비밀번호 틀림 (기본예외)
         else if(exception instanceof BadCredentialsException){
-            errCode = BadCredentialsException.class.getName();
+            errCode = CommonErrCode.BAD_CREDENTIALS;
         }
 
-        if(exception != null){
-            errMessage = exception.getMessage(); //예: BadCredentialsException에서 설정한 메시지
-        }
 
         //JSON Response Body 작성
-        Map<String,Object> errResponseMap = new HashMap<>();
-        errResponseMap.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        errResponseMap.put("error", "Unauthorized");
-        errResponseMap.put("message", errMessage);
-        errResponseMap.put("path",request.getRequestURI());
-
-        response.getWriter().write(objectMapper.writeValueAsString(errResponseMap));
+        response.setStatus(errCode.getHttpStatus().value());
+        response.setContentType("application/json;charset=UTF-8");
+        ApiResponse<Void> apiResponse = ApiResponse.fail(errCode.getCode(), errCode.getMessage());
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }
