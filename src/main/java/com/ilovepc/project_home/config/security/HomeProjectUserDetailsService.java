@@ -3,7 +3,8 @@ package com.ilovepc.project_home.config.security;
 import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.config.security.vo.User;
 import com.ilovepc.project_home.repository.AuthMasterMapper;
-import com.ilovepc.project_home.utils.ClientUtils;
+import com.ilovepc.project_home.common.utils.ClientUtils;
+import com.ilovepc.project_home.common.exception.AuthenticationFailException;
 import com.ilovepc.project_home.web.auth.vo.signin.SignInParam;
 import com.ilovepc.project_home.web.auth.vo.signin.SignInResult;
 import com.ilovepc.project_home.web.auth.vo.signin.SignInRetValCode;
@@ -39,6 +40,7 @@ public class HomeProjectUserDetailsService implements UserDetailsService {
                     .build());
         if(signInResult.getResultCode() != SignInRetValCode.SUCCESS){
             //로그인 되지 않고  SignInRetValCode에 따른 에러 메시지 전송
+            throw new AuthenticationFailException(signInResult.getResultCode().getMessage(),signInResult.getResultCode().getCode());
         }
         //3. 정상유저 조회
         User user = authMasterMapper.pUserSel(signInResult.getUserNo());

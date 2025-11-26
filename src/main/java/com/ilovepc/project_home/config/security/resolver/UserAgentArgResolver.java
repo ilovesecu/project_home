@@ -1,7 +1,7 @@
 package com.ilovepc.project_home.config.security.resolver;
 
 import com.ilovepc.project_home.config.security.vo.UserAgent;
-import com.ilovepc.project_home.utils.ClientUtils;
+import com.ilovepc.project_home.common.utils.ClientUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;

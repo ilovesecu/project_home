@@ -1,4 +1,4 @@
-package com.ilovepc.project_home.utils;
+package com.ilovepc.project_home.common.utils;
 
 import com.ilovepc.project_home.config.security.resolver.LiteDeviceResolver;
 import com.ilovepc.project_home.config.security.vo.UserAgent;

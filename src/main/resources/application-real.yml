@@ -5,6 +5,7 @@ spring:
       host: HomeRedis
       # [변경] 포트는 컨테이너 내부 포트(6379)로 변경
       port: 6379
+      password: 'ENC(fweBuucZa1q0tUOBwbIV+1X2rtna2iHZ)'
 
 
 jwt:
