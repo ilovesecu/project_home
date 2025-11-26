@@ -2,6 +2,7 @@ spring:
   data:
     redis:
       host: ilovepc.duckdns.org
+      password: 'ENC(fweBuucZa1q0tUOBwbIV+1X2rtna2iHZ)'
       port: 26379
 
 

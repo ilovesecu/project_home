@@ -2,10 +2,12 @@ package com.ilovepc.project_home.config.security.vo;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
+@Setter
 public class User {
     private int userNo;
     private String email;
@@ -16,10 +18,10 @@ public class User {
 
     private List<Role> roles;
 
-    @Builder
+    /*@Builder
     public User(String email, String password, List<Role> roles) {
         this.email = email;
         this.password = password;
         this.roles = roles;
-    }
+    }*/
 }
