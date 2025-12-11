@@ -4,11 +4,13 @@ import com.ilovepc.project_home.web.auth.service.SignUpService;
 import com.ilovepc.project_home.web.auth.vo.signup.SignUpRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     // SecurityConfig에서 직접 AuthenticationManager를 Bean으로 등록하고 주입받아야 합니다.
     // (이 예제에서는 생략되었으나, 실제 구현 시 필요)
@@ -19,6 +21,12 @@ public class AuthController {
     @GetMapping("/hello")
     public String hello() {
         return "Hello World";
+    }
+
+    @PostMapping("/wakeUp")
+    public String wakeup() {
+        log.error("wakeUp");
+        return "okay";
     }
 
     @PostMapping("/v1/signup")
