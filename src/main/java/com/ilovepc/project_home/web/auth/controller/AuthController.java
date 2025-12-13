@@ -23,12 +23,6 @@ public class AuthController {
         return "Hello World";
     }
 
-    @PostMapping("/wakeUp")
-    public String wakeup() {
-        log.error("wakeUp");
-        return "okay";
-    }
-
     @PostMapping("/v1/signup")
     public String signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         signUpService.signUp(signUpRequest);

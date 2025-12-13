@@ -5,8 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
+//@TestPropertySource(properties = {"jasypt.encryptor.password="})
+//@ActiveProfiles("home")//, -Dspring.profiles.active=home
 class ProjectHomeApplicationTests {
 
     @Qualifier("jasyptStringEncryptor")

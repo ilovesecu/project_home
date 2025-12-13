@@ -37,6 +37,12 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
+    String[] publicUrls = {
+            "/api/auth/**",
+            "/api/wakeUp/**",
+            "/api/holiday"
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -88,7 +94,7 @@ public class SecurityConfig {
 
         //경로별 인가(Authorization) 설정
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(publicUrls).permitAll()
                 // /api/guest/** 경로는 GUEST, USER, ADMIN 모두 접근 가능
                 .requestMatchers("/api/guest/**").hasAnyRole(
                         Role.ROLE_GUEST.name().replace("ROLE_", ""),
