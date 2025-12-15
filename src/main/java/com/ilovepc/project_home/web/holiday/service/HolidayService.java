@@ -1,9 +1,9 @@
 package com.ilovepc.project_home.web.holiday.service;
 
-import com.ilovepc.project_home.config.rdb.annotation.HomeMaster;
 import com.ilovepc.project_home.repository.ProjectMasterMapper;
-import com.ilovepc.project_home.web.holiday.vo.HolidayRequest;
+import com.ilovepc.project_home.web.holiday.vo.HolidayMonthRequest;
 import com.ilovepc.project_home.web.holiday.vo.HolidayRestResponse;
+import com.ilovepc.project_home.web.holiday.vo.HolidayTodayRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,9 +14,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -28,7 +28,7 @@ public class HolidayService {
     private static final String API_URL = "https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo";
     private final ProjectMasterMapper projectMasterMapper;
 
-    public HolidayRestResponse getHolidays(int year, int month){
+    public HolidayRestResponse getHolidaysFromAPI(int year, int month){
         //RestTemplate 기본설정을 Encode 안하는 설정으로 변경
         DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory();
         factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE); //절대 인코딩 건들지 마!
@@ -58,38 +58,66 @@ public class HolidayService {
     }
 
     //이번달 휴일 가져오기 --> 파라미터가 없으면 이번달, 있으면 파라미터에 적힌 날짜의 휴일가져오기로 변경
-    public List<HolidayRestResponse.Item> getThisMonthHoliday(HolidayRequest holidayRequest){
-        if(!holidayRequest.validate()){
+    public List<HolidayRestResponse.Item> getThisMonthHoliday(HolidayMonthRequest holidayMonthRequest){
+        if(!holidayMonthRequest.validate()){ //파라미터가 정확하지 않다면 오늘날짜 강제 셋팅
             LocalDate today = LocalDate.now();
             int year = today.getYear();
             int month = today.getMonthValue();
 
-            holidayRequest.setYear(year);
-            holidayRequest.setMonth(month);
+            holidayMonthRequest.setYear(year);
+            holidayMonthRequest.setMonth(month);
         }
+        return getHolidays(holidayMonthRequest.getYear(), holidayMonthRequest.getMonth());
+    }
 
-        YearMonth yearMonth = YearMonth.of(holidayRequest.getYear(), holidayRequest.getMonth());
+    //이번 달 휴일을 DB에서 검색한다.
+    public List<HolidayRestResponse.Item> getHolidaysFromDB(String startDate, String endDate){
+        List<HolidayRestResponse.Item> holidayInfo = projectMasterMapper.getHolidayInfo(startDate, endDate);
+        return holidayInfo;
+    }
+
+    //DB에 휴일 저장
+    public void saveHoliday(HolidayRestResponse holidayRestResponse){
+        if(holidayRestResponse == null || holidayRestResponse.isEmpty()) return ;
+        int insertCnt = projectMasterMapper.insertHoliday(holidayRestResponse.getHolidayItem());
+        log.info("holiday insert cnt:{}",insertCnt);
+    }
+
+    //현재날짜가 휴일인지 판별한다.
+    public HolidayRestResponse.Item holidayToday(HolidayTodayRequest holidayTodayRequest){
+        if(!holidayTodayRequest.validate()){
+            //파라미터가 정확하지 않다면 오늘날짜를 강제로 셋팅해준다.
+            LocalDate today = LocalDate.now();
+            int year = today.getYear();
+            int month = today.getMonthValue();
+            int day = today.getDayOfMonth();
+
+            holidayTodayRequest.setYear(year);
+            holidayTodayRequest.setMonth(month);
+            holidayTodayRequest.setDay(day);
+        }
+        List<HolidayRestResponse.Item> holidays = getHolidays(holidayTodayRequest.getYear(), holidayTodayRequest.getMonth());
+        /*boolean b = holidays.stream().anyMatch((response -> {
+            return "Y".equals(response.getIsHoliday().toUpperCase(Locale.ROOT)) && Objects.equals(response.getLocdate(), holidayTodayRequest.integrated());
+        }));*/
+        HolidayRestResponse.Item item = holidays.stream().filter((response -> {
+            return "Y".equals(response.getIsHoliday().toUpperCase(Locale.ROOT)) && Objects.equals(response.getLocdate(), holidayTodayRequest.integrated());
+        })).findFirst().orElse(null);
+        return item;
+    }
+    
+    private List<HolidayRestResponse.Item>  getHolidays(int year, int month){
+        YearMonth yearMonth = YearMonth.of(year, month);
         String endDate = yearMonth.atEndOfMonth().toString();
         String startDate = yearMonth.atDay(1).toString();
         List<HolidayRestResponse.Item> holidaysFromDB = getHolidaysFromDB(startDate, endDate);
 
         //DB에 값이 없다면 API CALL 및 DB 저장
         if(holidaysFromDB == null || holidaysFromDB.isEmpty()){
-            HolidayRestResponse holidays = getHolidays(holidayRequest.getYear(), holidayRequest.getMonth());
+            HolidayRestResponse holidays = getHolidaysFromAPI(year, month);
             return holidays.getHolidayItem();
         }
 
-        return holidaysFromDB;
-    }
-
-    public List<HolidayRestResponse.Item> getHolidaysFromDB(String startDate, String endDate){
-        List<HolidayRestResponse.Item> holidayInfo = projectMasterMapper.getHolidayInfo(startDate, endDate);
-        return holidayInfo;
-    }
-
-    public void saveHoliday(HolidayRestResponse holidayRestResponse){
-        if(holidayRestResponse == null || holidayRestResponse.isEmpty()) return ;
-        int insertCnt = projectMasterMapper.insertHoliday(holidayRestResponse.getHolidayItem());
-        log.info("holiday insert cnt:{}",insertCnt);
+        return  holidaysFromDB; //DB값이 있다면 DB값을 반환한다.
     }
 }

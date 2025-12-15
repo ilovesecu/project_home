@@ -3,7 +3,7 @@ package com.ilovepc.project_home.web.holiday.vo;
 import lombok.Data;
 
 @Data
-public class HolidayRequest {
+public class HolidayMonthRequest {
     private int year;
     private int month;
 

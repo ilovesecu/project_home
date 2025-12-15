@@ -40,7 +40,8 @@ public class SecurityConfig {
     String[] publicUrls = {
             "/api/auth/**",
             "/api/wakeUp/**",
-            "/api/holiday"
+            "/api/holiday/month",
+            "/api/holiday/today"
     };
 
     @Bean
