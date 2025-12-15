@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ilovepc.project_home.repository.ProjectMasterMapper">
+    <insert id="insertHoliday" parameterType="java.util.List">
+        INSERT INTO home_project.holiday_info (
+            loc_date,
+            date_name,
+            is_holiday,
+            date_kind
+        )
+        VALUES
+            <foreach collection="holidayInfoList" item="item" separator=",">
+                (
+                    #{item.locdate},
+                    #{item.dateName},
+                    #{item.isHoliday},
+                    #{item.dateKind}
+                )
+            </foreach>
+        ON DUPLICATE KEY UPDATE
+        date_name  = VALUES(date_name),
+        is_holiday = VALUES(is_holiday),
+        date_kind  = VALUES(date_kind)
+    </insert>
+
+    <select id="getHolidayInfo" parameterType="java.lang.String">
+        SELECT
+            DATE_FORMAT(loc_date, '%Y%m%d') as locdate,
+            date_name as dateName,
+            is_holiday as isHoliday,
+            date_kind as dateKind
+        FROM home_project.holiday_info WHERE loc_date BETWEEN #{startDate} AND #{endDate};
+    </select>
+</mapper>
