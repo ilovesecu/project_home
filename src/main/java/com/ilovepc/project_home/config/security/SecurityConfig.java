@@ -41,7 +41,8 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/wakeUp/**",
             "/api/holiday/month",
-            "/api/holiday/today"
+            "/api/holiday/today",
+            "/api/todo/**"
     };
 
     @Bean
@@ -63,7 +64,7 @@ public class SecurityConfig {
         //return authenticationConfiguration.getAuthenticationManager(); //기존 기본 Manager
     }
 
-    @Bean
+
     public HomeProjectAuthenticationFilter  homeProjectAuthenticationFilter() throws Exception {
         HomeProjectAuthenticationFilter filter = new HomeProjectAuthenticationFilter(objectMapper);
         // Manager 주입

@@ -33,4 +33,56 @@
             date_kind as dateKind
         FROM home_project.holiday_info WHERE loc_date BETWEEN #{startDate} AND #{endDate};
     </select>
+
+
+    <!-- TODO MAPPER   -->
+    <select id="findKeyword" resultType="com.ilovepc.project_home.web.todo.vo.TodoAddKeywordResult">
+        SELECT
+            id,
+            mm_user_id,
+            name,
+            is_deleted,
+            created_at
+        FROM home_project.todo_keywords
+        WHERE name = #{name}
+          AND is_deleted = 0
+        LIMIT 1
+    </select>
+
+    <insert id="insertKeyword" parameterType="com.ilovepc.project_home.web.todo.vo.TodoAddKeywordParam"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO home_project.todo_keywords (
+            mm_user_id,
+            name
+        ) VALUES (
+                     #{mmUserId},
+                     #{name}
+                 )
+    </insert>
+
+
+    <insert id="insertTask" parameterType="com.ilovepc.project_home.web.todo.vo.TodoAddTaskParam">
+        INSERT INTO home_project.todo_tasks (
+            keyword_id,
+            content
+        ) VALUES (
+                     #{keywordId},
+                     #{content}
+                 )
+    </insert>
+
+    <insert id="insertTasksBulk" parameterType="java.util.List">
+        INSERT INTO home_project.todo_tasks (
+        keyword_id,
+        content
+        ) VALUES
+        <foreach collection="taskList" item="item" separator=",">
+            (
+            #{item.keywordId},
+            #{item.content}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        status = 0, created_at = NOW()
+    </insert>
 </mapper>
