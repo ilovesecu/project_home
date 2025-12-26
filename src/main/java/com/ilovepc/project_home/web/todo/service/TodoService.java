@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 public class TodoService {
     private final ProjectMasterMapper projectMasterMapper;
 
-    public TodoAddResponse createTodos(TodoAddRequest todoAddRequest){
+    public TodoAddResponse createTodos(TodoMatterRequest todoMatterRequest){
         TodoAddResponse todoAddResponse = TodoAddResponse.builder()
-                .text("\uD83D\uDE00 기본응답 입니다. " + todoAddRequest.getText())
+                .text("\uD83D\uDE00 기본응답 입니다. " + todoMatterRequest.getText())
                 .response_type("in_channel") // 모두에게 보일지("in_channel"), 나에게만 보일지("ephemeral")
                 .build();
 
         try{
-            String text = todoAddRequest.getText();
+            String text = todoMatterRequest.getText();
             String keyword = getKeyword(text);
             List<String> tasks = getTasks(text);
             if(!StringUtils.hasText(keyword)){
@@ -43,7 +43,7 @@ public class TodoService {
             //1-1. 키워드 없을 시 새로생성
             if(keywordResult == null){
                 TodoAddKeywordParam todoAddKeywordParam = TodoAddKeywordParam.builder()
-                        .mmUserId(todoAddRequest.getUserId())
+                        .mmUserId(todoMatterRequest.getUserId())
                         .name(keyword)
                         .build();
                 projectMasterMapper.insertKeyword(todoAddKeywordParam); // 실행 후 keyword.getId() 사용 가능
@@ -67,10 +67,18 @@ public class TodoService {
             }
             return todoAddResponse;
         }catch (Exception e){
-            log.error("[createTodos] TodoAddRequest:{} error 발생",todoAddRequest,e);
+            log.error("[createTodos] TodoAddRequest:{} error 발생", todoMatterRequest,e);
             todoAddResponse.setText("❌ 할 일이 추가되지 않았습니다. (에러 발생:"+e.getMessage()+")");
             return todoAddResponse;
         }
+    }
+
+    public void getListKeywordAndTask(TodoMatterRequest todoMatterRequest){
+        List<String> keywords = getKeywordMulti(todoMatterRequest.getText());
+
+        List<TodoKeywordResult> todoKeywordResults = projectMasterMapper.selectTasksByKeywords(keywords);
+
+        log.info("aa:{}",todoKeywordResults);
     }
 
     public String getKeyword(String text) {
@@ -88,6 +96,25 @@ public class TodoService {
         }
         // 5. 첫 공백 앞까지만 잘라서 반환
         return trimmedText.substring(0, spaceIndex);
+    }
+
+    public List<String> getKeywordMulti(String message) {
+        // 메시지가 비어있거나 null인 경우 빈 리스트 반환
+        if (message == null || message.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 1. 공백(스페이스, 탭 등)을 기준으로 문자열 분리
+        // "\\s+"는 하나 이상의 공백을 의미
+        String[] parts = message.trim().split("\\s+");
+
+        // 2. 명령어(/kl)만 있고 키워드가 없는 경우 빈 리스트 반환
+        if (parts.length == 0) {
+            return Collections.emptyList();
+        }
+
+        // 3. 명령어(index 0)를 제외하고 나머지 단어들을 수집
+        return new ArrayList<>(Arrays.asList(parts));
     }
 
     public List<String> getTasks(String text) {

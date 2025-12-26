@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString
 // ▼ 이 한 줄이면 user_id -> userId 로 자동 매핑
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class TodoAddRequest {
+public class TodoMatterRequest {
     private String channelId;   //명령어가 실행된 채널 고유 ID, channel_id -> etto6py87tgntfhzcgntfj1jmy
     private String channelName; //채널 이름, channel_name -> 4q1u8wsgojn47m5m7ozxohxwsr__dny87ykrjbgxfeq3wrtcopndky
     private String command;     //실행된 명령어 : /tadev, /ta /kl 등
