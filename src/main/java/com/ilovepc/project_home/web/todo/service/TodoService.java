@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 public class TodoService {
     private final ProjectMasterMapper projectMasterMapper;
 
-    public TodoAddResponse createTodos(TodoMatterRequest todoMatterRequest){
-        TodoAddResponse todoAddResponse = TodoAddResponse.builder()
+    public TodoMatterResponse createTodos(TodoMatterRequest todoMatterRequest){
+        TodoMatterResponse todoMatterResponse = TodoMatterResponse.builder()
                 .text("\uD83D\uDE00 기본응답 입니다. " + todoMatterRequest.getText())
                 .response_type("in_channel") // 모두에게 보일지("in_channel"), 나에게만 보일지("ephemeral")
                 .build();
@@ -30,12 +30,12 @@ public class TodoService {
             String keyword = getKeyword(text);
             List<String> tasks = getTasks(text);
             if(!StringUtils.hasText(keyword)){
-                todoAddResponse.setText("❌ 할 일이 추가되지 않았습니다. (키워드가 비었음.)");
-                return todoAddResponse;
+                todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (키워드가 비었음.)");
+                return todoMatterResponse;
             }
             if(tasks.isEmpty()){
-                todoAddResponse.setText("❌ 할 일이 추가되지 않았습니다. (할 일이 비었음.)");
-                return todoAddResponse;
+                todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (할 일이 비었음.)");
+                return todoMatterResponse;
             }
             //1. 키워드 있는지 확인
             TodoAddKeywordResult keywordResult = projectMasterMapper.findKeyword(keyword);
@@ -63,22 +63,53 @@ public class TodoService {
 
             if (!taskParams.isEmpty()) {
                 projectMasterMapper.insertTasksBulk(taskParams);
-                todoAddResponse.setText("✅ 할 일이 추가 되었습니다! "+taskParams.stream().map(TodoAddTaskParam::getContent).collect(Collectors.joining(",")));
+                todoMatterResponse.setText("✅ 할 일이 추가 되었습니다! "+taskParams.stream().map(TodoAddTaskParam::getContent).collect(Collectors.joining(",")));
             }
-            return todoAddResponse;
+            return todoMatterResponse;
         }catch (Exception e){
             log.error("[createTodos] TodoAddRequest:{} error 발생", todoMatterRequest,e);
-            todoAddResponse.setText("❌ 할 일이 추가되지 않았습니다. (에러 발생:"+e.getMessage()+")");
-            return todoAddResponse;
+            todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (에러 발생:"+e.getMessage()+")");
+            return todoMatterResponse;
         }
     }
 
-    public void getListKeywordAndTask(TodoMatterRequest todoMatterRequest){
+    public String getListKeywordAndTask(TodoMatterRequest todoMatterRequest){
         List<String> keywords = getKeywordMulti(todoMatterRequest.getText());
 
         List<TodoKeywordResult> todoKeywordResults = projectMasterMapper.selectTasksByKeywords(keywords);
+        String todoListMessage = createTodoListMessage(todoKeywordResults);
+        return todoListMessage;
+    }
 
-        log.info("aa:{}",todoKeywordResults);
+    private String createTodoListMessage(List<TodoKeywordResult> results){
+        if(results == null || results.isEmpty()){
+            return "조회된 할 일이 없습니다. 텅 비었네요! 📭";
+        }
+        StringBuilder sb = new StringBuilder();
+        // 전체 제목
+        sb.append("### 📋 검색된 할 일 목록\n");
+        sb.append("---\n"); // 구분선
+
+        for(TodoKeywordResult keywordResult : results){
+            // 1. 키워드 제목 (Bold 처리 및 이모지)
+            sb.append("#### 🏷️ **").append(keywordResult.getKeyword()).append("**");
+            sb.append(" (").append(keywordResult.getKeywordCreated()).append(")\n");
+
+            List<TodoTaskResult> tasks = keywordResult.getTasks();
+            if(tasks != null && !tasks.isEmpty()){
+                // 2. 할 일 목록 (체크박스 스타일)
+                for (TodoTaskResult task : tasks) {
+                    // Mattermost는 "- [ ]" 를 체크박스로 렌더링하지는 않지만 리스트처럼 show.
+                    // 식별을 위해 ID를 괄호에 작게 넣어두면 나중에 삭제/완료할 때 사용.
+                    sb.append("- ")
+                            .append(task.getContent())
+                            .append(" `[ID: ").append(task.getTaskId()).append("]`") // ID를 코드 블럭으로 표시
+                            .append("\n");
+                }
+            }
+        }
+
+        return sb.toString();
     }
 
     public String getKeyword(String text) {
