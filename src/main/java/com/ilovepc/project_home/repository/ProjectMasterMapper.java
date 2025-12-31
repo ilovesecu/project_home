@@ -34,4 +34,6 @@ public interface ProjectMasterMapper {
     int insertTasksBulk(@Param("taskList") List<TodoAddTaskParam> taskList);
 
     List<TodoKeywordResult> selectTasksByKeywords(@Param("keywordList")List<String>keywordList);
+
+    List<TodoKeywordResult> selectTaskAll();
 }

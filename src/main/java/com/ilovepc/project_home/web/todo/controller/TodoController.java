@@ -7,10 +7,7 @@ import com.ilovepc.project_home.web.todo.vo.TodoMatterResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -54,4 +51,8 @@ public class TodoController {
                 .build();
     }
 
+    @GetMapping("/list/all")
+    public void todoListAll(){
+        todoService.getTodoListAll();
+    }
 }

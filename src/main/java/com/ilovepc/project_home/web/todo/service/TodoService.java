@@ -81,6 +81,12 @@ public class TodoService {
         return todoListMessage;
     }
 
+    //React로 전송할 모든 Todo List
+    public void getTodoListAll(){
+        List<TodoKeywordResult> todoKeywordResults = projectMasterMapper.selectTaskAll();
+        log.info("ggggggggggggggggggg:{}",todoKeywordResults);
+    }
+
     private String createTodoListMessage(List<TodoKeywordResult> results){
         if(results == null || results.isEmpty()){
             return "조회된 할 일이 없습니다. 텅 비었네요! 📭";

@@ -122,4 +122,22 @@
         AND (t.status = 0 OR t.status IS NULL)
     </select>
 
+    <select id="selectTaskAll" resultMap="KeywordWithTasksMap">
+        SELECT
+        k.id          as keyword_id,
+        k.mm_user_id  as mm_user_id,
+        k.name        as keyword,
+        k.is_deleted  as is_deleted,
+        k.created_at  as keyword_created,
+        t.id          as task_id,
+        t.content     as content,
+        t.status      as status,
+        t.created_at  as task_created
+        FROM home_project.todo_keywords k
+        LEFT JOIN home_project.todo_tasks t ON k.id = t.keyword_id
+        WHERE
+         k.is_deleted = 0
+         AND (t.status = 0 OR t.status IS NULL)
+    </select>
+
 </mapper>
