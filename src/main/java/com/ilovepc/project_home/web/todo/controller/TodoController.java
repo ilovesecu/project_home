@@ -1,14 +1,18 @@
 package com.ilovepc.project_home.web.todo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.todo.service.TodoService;
+import com.ilovepc.project_home.web.todo.vo.TodoKeywordResult;
 import com.ilovepc.project_home.web.todo.vo.TodoMatterRequest;
 import com.ilovepc.project_home.web.todo.vo.TodoMatterResponse;
+import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,6 +22,17 @@ import java.util.Map;
 public class TodoController {
     private final TodoService todoService;
     private final ObjectMapper om;
+
+    @PostMapping(
+        value = "/add",
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ApiResponse<TodoInsertResultInfo> todoAdd(@RequestBody TodoMatterRequest todoMatterRequest){
+        log.info("TODO ADD COMMAND EXEC : {}", todoMatterRequest);
+        TodoInsertResultInfo todoReact = todoService.createTodoReact(todoMatterRequest);
+        return ApiResponse.success(todoReact);
+    }
+
     @PostMapping(
             value = "/add",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE
@@ -27,8 +42,7 @@ public class TodoController {
         //그래서 일단 Map으로 받고, ObjectMapper로 변환하기로함.
         TodoMatterRequest todoMatterRequest = om.convertValue(paramMap, TodoMatterRequest.class);
         log.info("TODO ADD COMMAND EXEC : {}", todoMatterRequest);
-
-        TodoMatterResponse todos = todoService.createTodos(todoMatterRequest);
+        TodoMatterResponse todos = todoService.createTodosMatter(todoMatterRequest);
 
         // 4. 응답 (메타모스트 형식)
         return todos;
@@ -52,7 +66,7 @@ public class TodoController {
     }
 
     @GetMapping("/list/all")
-    public void todoListAll(){
-        todoService.getTodoListAll();
+    public List<TodoKeywordResult> todoListAll(){
+        return todoService.getTodoListAll();
     }
 }

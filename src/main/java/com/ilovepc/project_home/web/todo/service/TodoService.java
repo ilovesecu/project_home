@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.todo.service;
 
 import com.ilovepc.project_home.repository.ProjectMasterMapper;
 import com.ilovepc.project_home.web.todo.vo.*;
+import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,13 @@ import java.util.stream.Collectors;
 public class TodoService {
     private final ProjectMasterMapper projectMasterMapper;
 
-    public TodoMatterResponse createTodos(TodoMatterRequest todoMatterRequest){
+    public TodoInsertResultInfo createTodoReact(TodoMatterRequest todoMatterRequest){
+        String text = todoMatterRequest.getText();
+        String userId = todoMatterRequest.getUserId();
+        return this.createTodo(text, userId);
+    }
+
+    public TodoMatterResponse createTodosMatter(TodoMatterRequest todoMatterRequest){
         TodoMatterResponse todoMatterResponse = TodoMatterResponse.builder()
                 .text("\uD83D\uDE00 기본응답 입니다. " + todoMatterRequest.getText())
                 .response_type("in_channel") // 모두에게 보일지("in_channel"), 나에게만 보일지("ephemeral")
@@ -27,50 +34,68 @@ public class TodoService {
 
         try{
             String text = todoMatterRequest.getText();
-            String keyword = getKeyword(text);
-            List<String> tasks = getTasks(text);
-            if(!StringUtils.hasText(keyword)){
-                todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (키워드가 비었음.)");
-                return todoMatterResponse;
-            }
-            if(tasks.isEmpty()){
-                todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (할 일이 비었음.)");
-                return todoMatterResponse;
-            }
-            //1. 키워드 있는지 확인
-            TodoAddKeywordResult keywordResult = projectMasterMapper.findKeyword(keyword);
-
-            //1-1. 키워드 없을 시 새로생성
-            if(keywordResult == null){
-                TodoAddKeywordParam todoAddKeywordParam = TodoAddKeywordParam.builder()
-                        .mmUserId(todoMatterRequest.getUserId())
-                        .name(keyword)
-                        .build();
-                projectMasterMapper.insertKeyword(todoAddKeywordParam); // 실행 후 keyword.getId() 사용 가능
-                keywordResult = new TodoAddKeywordResult();
-                keywordResult.setId(todoAddKeywordParam.getId());
-            }
-            Long keywordId = keywordResult.getId();
-
-            //2. 확보된 keyword.getId()를 통해 할 일 task 생성
-            List<TodoAddTaskParam> taskParams = new ArrayList<>();
-            for(String content : tasks){
-                taskParams.add(TodoAddTaskParam.builder()
-                        .keywordId(keywordId)
-                        .content(content)
-                        .build());
+            String userId = todoMatterRequest.getUserId();
+            TodoInsertResultInfo todoInsertResultInfo = this.createTodo(text, userId);
+            switch (todoInsertResultInfo.getResult()){
+                case -1 -> todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (키워드가 비었음.)");
+                case -2 -> todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (할 일이 비었음.)");
+                case 0 -> todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (오류 발생)");
+                default -> todoMatterResponse.setText("✅ 할 일이 추가 되었습니다! "+todoInsertResultInfo.getTodoAddTaskParams().stream().map(TodoAddTaskParam::getContent).collect(Collectors.joining(",")));
             }
 
-            if (!taskParams.isEmpty()) {
-                projectMasterMapper.insertTasksBulk(taskParams);
-                todoMatterResponse.setText("✅ 할 일이 추가 되었습니다! "+taskParams.stream().map(TodoAddTaskParam::getContent).collect(Collectors.joining(",")));
-            }
             return todoMatterResponse;
         }catch (Exception e){
             log.error("[createTodos] TodoAddRequest:{} error 발생", todoMatterRequest,e);
             todoMatterResponse.setText("❌ 할 일이 추가되지 않았습니다. (에러 발생:"+e.getMessage()+")");
             return todoMatterResponse;
         }
+    }
+
+    private TodoInsertResultInfo createTodo(String text, String useId){
+        String keyword = getKeyword(text);
+        List<String> tasks = getTasks(text);
+        if(!StringUtils.hasText(keyword)){
+            return new TodoInsertResultInfo(-1, null);
+        }
+        if(tasks.isEmpty()){
+            return new TodoInsertResultInfo(-2, null);
+        }
+        //1. 키워드 있는지 확인
+        TodoAddKeywordResult keywordResult = projectMasterMapper.findKeyword(keyword);
+
+        //1-1. 키워드 없을 시 새로생성
+        if(keywordResult == null){
+            TodoAddKeywordParam todoAddKeywordParam = TodoAddKeywordParam.builder()
+                    .mmUserId(useId)
+                    .name(keyword)
+                    .build();
+            projectMasterMapper.insertKeyword(todoAddKeywordParam); // 실행 후 keyword.getId() 사용 가능
+            keywordResult = new TodoAddKeywordResult();
+            keywordResult.setId(todoAddKeywordParam.getId());
+        }
+        Long keywordId = keywordResult.getId();
+
+        //2. 확보된 keyword.getId()를 통해 할 일 task 생성
+        List<TodoAddTaskParam> taskParams = new ArrayList<>();
+        for(String content : tasks){
+            taskParams.add(TodoAddTaskParam.builder()
+                    .keywordId(keywordId)
+                    .content(content)
+                    .status(0)
+                    .build());
+        }
+
+        if (!taskParams.isEmpty()) {
+            //1 : 새로운 행이 INSERT 된 경우
+            //2 : UPDATE (충돌)
+            //0 : 변경사항 없는 경우
+            int insertSum = projectMasterMapper.insertTasksBulk(taskParams);
+            if(insertSum != taskParams.size()){
+                log.error("TODO INSERT 중 에러 발생");
+            }
+            return new TodoInsertResultInfo(insertSum, taskParams);
+        }
+        return new TodoInsertResultInfo(0, taskParams);
     }
 
     public String getListKeywordAndTask(TodoMatterRequest todoMatterRequest){
@@ -82,9 +107,8 @@ public class TodoService {
     }
 
     //React로 전송할 모든 Todo List
-    public void getTodoListAll(){
-        List<TodoKeywordResult> todoKeywordResults = projectMasterMapper.selectTaskAll();
-        log.info("ggggggggggggggggggg:{}",todoKeywordResults);
+    public List<TodoKeywordResult> getTodoListAll(){
+        return projectMasterMapper.selectTaskAll();
     }
 
     private String createTodoListMessage(List<TodoKeywordResult> results){

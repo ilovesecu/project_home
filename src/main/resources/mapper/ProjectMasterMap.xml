@@ -71,7 +71,8 @@
                  )
     </insert>
 
-    <insert id="insertTasksBulk" parameterType="java.util.List">
+    <insert id="insertTasksBulk" parameterType="java.util.List"
+            useGeneratedKeys="true" keyProperty="id">
         INSERT INTO home_project.todo_tasks (
         keyword_id,
         content
@@ -83,7 +84,7 @@
             )
         </foreach>
         ON DUPLICATE KEY UPDATE
-        status = 0, created_at = NOW()
+        id=LAST_INSERT_ID(id), status = 0, created_at = NOW()
     </insert>
 
     <resultMap id="KeywordWithTasksMap" type="com.ilovepc.project_home.web.todo.vo.TodoKeywordResult">

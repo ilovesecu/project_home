@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TodoAddTaskParam {
-    private Long id;
-    private Long keywordId;   // DB: keyword_id
-    private String content;   // DB: content
+    private Long    id;
+    private Long    keywordId;   // DB: keyword_id
+    private String  content;   // DB: content
     private Integer status;   // DB: status (기본값 0)
-    private String createdAt; // DB: created_at
+    private String  createdAt; // DB: created_at
 }
