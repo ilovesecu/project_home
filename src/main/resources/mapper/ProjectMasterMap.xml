@@ -141,4 +141,8 @@
          AND (t.status = 0 OR t.status IS NULL)
     </select>
 
+    <update id="deleteTask">
+        UPDATE home_project.todo_tasks SET status = 2 WHERE id = #{taskId};
+    </update>
+
 </mapper>

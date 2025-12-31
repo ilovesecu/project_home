@@ -26,6 +26,10 @@ public class TodoService {
         return this.createTodo(text, userId);
     }
 
+    public int deleteTask(int taskId){
+        return this.deleteTaskCommom(taskId);
+    }
+
     public TodoMatterResponse createTodosMatter(TodoMatterRequest todoMatterRequest){
         TodoMatterResponse todoMatterResponse = TodoMatterResponse.builder()
                 .text("\uD83D\uDE00 기본응답 입니다. " + todoMatterRequest.getText())
@@ -96,6 +100,14 @@ public class TodoService {
             return new TodoInsertResultInfo(insertSum, taskParams);
         }
         return new TodoInsertResultInfo(0, taskParams);
+    }
+
+    private int deleteTaskCommom(int taskId){
+        int deleteCnt = projectMasterMapper.deleteTask(taskId);
+        if(deleteCnt > 0){
+            return taskId;
+        }
+        return deleteCnt;
     }
 
     public String getListKeywordAndTask(TodoMatterRequest todoMatterRequest){

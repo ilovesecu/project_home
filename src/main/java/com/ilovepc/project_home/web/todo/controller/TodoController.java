@@ -65,8 +65,16 @@ public class TodoController {
                 .build();
     }
 
+    //REACT 용
     @GetMapping("/list/all")
     public List<TodoKeywordResult> todoListAll(){
         return todoService.getTodoListAll();
+    }
+
+    //REACT 용
+    @PostMapping(value = "/delete/task/{taskId}")
+    public ApiResponse<Integer> deleteTask(@PathVariable("taskId")int taskId){
+        int deleteResult = todoService.deleteTask(taskId);
+        return ApiResponse.success(deleteResult);
     }
 }

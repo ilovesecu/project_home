@@ -36,4 +36,6 @@ public interface ProjectMasterMapper {
     List<TodoKeywordResult> selectTasksByKeywords(@Param("keywordList")List<String>keywordList);
 
     List<TodoKeywordResult> selectTaskAll();
+
+    int deleteTask(@Param("taskId")int taskId);
 }
