@@ -24,7 +24,7 @@ public interface ProjectMasterMapper {
 
     // 2. 키워드 등록
     // useGeneratedKeys를 통해 insert 후 id값을 객체에 채워줌
-    void insertKeyword(TodoAddKeywordParam todoKeyword);
+    int insertKeyword(TodoAddKeywordParam todoKeyword);
 
     // 3. 할 일 단건 등록
     void insertTask(TodoAddTaskParam todoTask);

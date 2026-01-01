@@ -138,7 +138,7 @@
         LEFT JOIN home_project.todo_tasks t ON k.id = t.keyword_id
         WHERE
          k.is_deleted = 0
-         AND (t.status = 0 OR t.status IS NULL)
+         AND (t.status = 0 OR t.status = 1 OR t.status IS NULL)
     </select>
 
     <update id="deleteTask">

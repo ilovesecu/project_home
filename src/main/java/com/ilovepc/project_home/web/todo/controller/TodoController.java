@@ -7,6 +7,8 @@ import com.ilovepc.project_home.web.todo.vo.TodoKeywordResult;
 import com.ilovepc.project_home.web.todo.vo.TodoMatterRequest;
 import com.ilovepc.project_home.web.todo.vo.TodoMatterResponse;
 import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
+import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordInsResultInfo;
+import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -82,5 +84,12 @@ public class TodoController {
     public ApiResponse<Integer> toggleTask(@PathVariable("taskId")int taskId){
         int toggleResult = todoService.toggleTask(taskId);
         return ApiResponse.success(toggleResult);
+    }
+
+    //REACT 용
+    @PostMapping(value = "/add/keyword")
+    public ApiResponse<TodoKeywordInsResultInfo> addKeyword(@RequestBody TodoKeywordRequest todoKeywordRequest){
+        TodoKeywordInsResultInfo keyword = todoService.createKeyword(todoKeywordRequest.getKeyword(), todoKeywordRequest.getMmUserId());
+        return ApiResponse.success(keyword);
     }
 }

@@ -3,11 +3,13 @@ package com.ilovepc.project_home.web.todo.service;
 import com.ilovepc.project_home.repository.ProjectMasterMapper;
 import com.ilovepc.project_home.web.todo.vo.*;
 import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
+import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordInsResultInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +34,10 @@ public class TodoService {
 
     public int toggleTask(int taskId){
         return this.toggleTaskCommom(taskId);
+    }
+
+    public TodoKeywordInsResultInfo createKeyword(String keyword, String userId){
+        return this.createKeywordCommon(keyword, userId);
     }
 
     public TodoMatterResponse createTodosMatter(TodoMatterRequest todoMatterRequest){
@@ -59,7 +65,28 @@ public class TodoService {
         }
     }
 
-    private TodoInsertResultInfo createTodo(String text, String useId){
+    private TodoKeywordInsResultInfo createKeywordCommon(String keyword, String userId){
+        //1. 키워드 있는지 확인
+        TodoAddKeywordResult keywordResult = projectMasterMapper.findKeyword(keyword);
+        //2. 키워드 없을 시 새로 생성
+        if(keywordResult == null){
+            TodoAddKeywordParam todoAddKeywordParam = TodoAddKeywordParam.builder()
+                    .mmUserId(userId)
+                    .name(keyword)
+                    .build();
+            int insResult = projectMasterMapper.insertKeyword(todoAddKeywordParam); // 실행 후 keyword.getId() 사용 가능
+            keywordResult = new TodoAddKeywordResult();
+            keywordResult.setId(todoAddKeywordParam.getId());
+            keywordResult.setName(keyword);
+            keywordResult.setIsDeleted(0);
+            keywordResult.setCreatedAt(LocalDateTime.now().toString());
+            keywordResult.setMmUserId(userId);
+            return new TodoKeywordInsResultInfo(insResult, keywordResult);
+        }
+        return new TodoKeywordInsResultInfo(-1, keywordResult);
+    }
+
+    private TodoInsertResultInfo createTodo(String text, String userId){
         String keyword = getKeyword(text);
         List<String> tasks = getTasks(text);
         if(!StringUtils.hasText(keyword)){
@@ -68,20 +95,8 @@ public class TodoService {
         if(tasks.isEmpty()){
             return new TodoInsertResultInfo(-2, null);
         }
-        //1. 키워드 있는지 확인
-        TodoAddKeywordResult keywordResult = projectMasterMapper.findKeyword(keyword);
-
-        //1-1. 키워드 없을 시 새로생성
-        if(keywordResult == null){
-            TodoAddKeywordParam todoAddKeywordParam = TodoAddKeywordParam.builder()
-                    .mmUserId(useId)
-                    .name(keyword)
-                    .build();
-            projectMasterMapper.insertKeyword(todoAddKeywordParam); // 실행 후 keyword.getId() 사용 가능
-            keywordResult = new TodoAddKeywordResult();
-            keywordResult.setId(todoAddKeywordParam.getId());
-        }
-        Long keywordId = keywordResult.getId();
+        TodoKeywordInsResultInfo todoKeywordInsResultInfo = this.createKeywordCommon(keyword, userId);
+        Long keywordId = todoKeywordInsResultInfo.getTodoAddKeywordResult().getId();
 
         //2. 확보된 keyword.getId()를 통해 할 일 task 생성
         List<TodoAddTaskParam> taskParams = new ArrayList<>();
