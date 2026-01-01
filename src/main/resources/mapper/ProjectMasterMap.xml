@@ -145,4 +145,7 @@
         UPDATE home_project.todo_tasks SET status = 2 WHERE id = #{taskId};
     </update>
 
+    <update id="toggleTask">
+        UPDATE home_project.todo_tasks SET status = 1 - status WHERE id = #{taskId};
+    </update>
 </mapper>

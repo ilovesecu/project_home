@@ -38,4 +38,6 @@ public interface ProjectMasterMapper {
     List<TodoKeywordResult> selectTaskAll();
 
     int deleteTask(@Param("taskId")int taskId);
+
+    int toggleTask(@Param("taskId")int taskId);
 }

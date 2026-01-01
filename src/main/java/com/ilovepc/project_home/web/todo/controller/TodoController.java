@@ -72,9 +72,15 @@ public class TodoController {
     }
 
     //REACT 용
-    @PostMapping(value = "/delete/task/{taskId}")
+    @DeleteMapping(value = "/delete/task/{taskId}")
     public ApiResponse<Integer> deleteTask(@PathVariable("taskId")int taskId){
         int deleteResult = todoService.deleteTask(taskId);
         return ApiResponse.success(deleteResult);
+    }
+    //REACT 용
+    @PatchMapping(value = "/toggle/task/{taskId}")
+    public ApiResponse<Integer> toggleTask(@PathVariable("taskId")int taskId){
+        int toggleResult = todoService.toggleTask(taskId);
+        return ApiResponse.success(toggleResult);
     }
 }
