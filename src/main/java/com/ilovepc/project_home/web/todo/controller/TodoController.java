@@ -92,4 +92,10 @@ public class TodoController {
         TodoKeywordInsResultInfo keyword = todoService.createKeyword(todoKeywordRequest.getKeyword(), todoKeywordRequest.getMmUserId());
         return ApiResponse.success(keyword);
     }
+
+    @DeleteMapping(value="/keyword/{keywordId}")
+    public ApiResponse<Void> deleteKeyword(@PathVariable("keywordId")int keywordId){
+        todoService.deleteKeyword(keywordId);
+        return ApiResponse.success();
+    }
 }

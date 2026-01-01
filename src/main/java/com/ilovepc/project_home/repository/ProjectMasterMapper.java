@@ -40,4 +40,7 @@ public interface ProjectMasterMapper {
     int deleteTask(@Param("taskId")int taskId);
 
     int toggleTask(@Param("taskId")int taskId);
+
+    @Select("CALL home_project.DeleteKeywordAndArchiveTasks(#{keywordId})")
+    void deleteKeyword(@Param("keywordId")int keywordId);
 }

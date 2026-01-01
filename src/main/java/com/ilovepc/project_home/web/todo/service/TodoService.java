@@ -29,15 +29,20 @@ public class TodoService {
     }
 
     public int deleteTask(int taskId){
-        return this.deleteTaskCommom(taskId);
+        return this.deleteTaskCommon(taskId);
     }
 
     public int toggleTask(int taskId){
-        return this.toggleTaskCommom(taskId);
+        return this.toggleTaskCommon(taskId);
     }
 
     public TodoKeywordInsResultInfo createKeyword(String keyword, String userId){
         return this.createKeywordCommon(keyword, userId);
+    }
+
+    public int deleteKeyword(int keywordId){
+        this.deleteKeywordCommon(keywordId);
+        return 1;
     }
 
     public TodoMatterResponse createTodosMatter(TodoMatterRequest todoMatterRequest){
@@ -121,7 +126,7 @@ public class TodoService {
         return new TodoInsertResultInfo(0, taskParams);
     }
 
-    private int toggleTaskCommom(int taskId){
+    private int toggleTaskCommon(int taskId){
         int updateCnt = projectMasterMapper.toggleTask(taskId);
         if(updateCnt > 0){
             return taskId;
@@ -129,12 +134,20 @@ public class TodoService {
         return -1;
     }
 
-    private int deleteTaskCommom(int taskId){
+    private int deleteTaskCommon(int taskId){
         int deleteCnt = projectMasterMapper.deleteTask(taskId);
         if(deleteCnt > 0){
             return taskId;
         }
         return -1;
+    }
+
+    private int deleteKeywordCommon(int keywordId){
+        if(keywordId > 0){
+            projectMasterMapper.deleteKeyword(keywordId);
+            return 1;
+        }
+        return 0;
     }
 
     public String getListKeywordAndTask(TodoMatterRequest todoMatterRequest){
