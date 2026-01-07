@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ilovepc.project_home.repository.PraiseStickerMapper">
+    <insert id="createBoard" parameterType="com.ilovepc.project_home.web.sticker.vo.BoardParam">
+        INSERT INTO home_project.praise_boards(id,user_no,title,goal,total_slots,reward_item)
+        VALUES (#{id},#{userNo},#{title},#{goal},#{totalSlots},#{rewardItem})
+    </insert>
+    <insert id="stampSticker" parameterType="com.ilovepc.project_home.web.sticker.vo.StampStickerParam">
+        INSERT INTO home_project.praise_stickers(board_id, slot_id, sticker_url)
+        VALUES (#{boardId},#{slotId},#{stickerUrl})
+    </insert>
+</mapper>
