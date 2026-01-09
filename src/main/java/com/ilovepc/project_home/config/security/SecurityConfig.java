@@ -23,6 +23,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -82,6 +85,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 0. http.cors() 추가 (corsConfigurationSource 비활성화 방지)
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
         // CSRF, Form-Login, HttpBasic 비활성화
         http.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -126,5 +132,34 @@ public class SecurityConfig {
         //         .accessDeniedHandler(new JwtAccessDeniedHandler())        // 403
         // );
         return http.build();
+    }
+
+
+    // 2. CORS 설정을 위한 Bean 추가
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 허용할 Origin (React 서버 주소)
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://home.ilovepc.duckdns.org" // 실서버용 (안전장치) - 이거 안해도 NPM에서 가로채기 때문에 할 필요없긴함.
+        ));
+
+        // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // 허용할 헤더
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // 내 서버가 응답할 때 브라우저가 읽을 수 있게 허용할 헤더 (JWT 사용 시 필요)
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie"));
+
+        // 자격 증명 허용 (Cookie 등 사용 시 true)
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
