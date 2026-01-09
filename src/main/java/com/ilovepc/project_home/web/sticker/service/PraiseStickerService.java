@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,9 +15,9 @@ import java.util.List;
 public class PraiseStickerService {
     private final PraiseStickerMapper praiseStickerMapper;
 
-    public void createBoard(BoardRequest boardRequest){
+    public BoardResult createBoard(BoardRequest boardRequest){
         //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        this.createBoardCommon(boardRequest.buildParam(5L));
+        return this.createBoardCommon(boardRequest.buildParam(5L));
     }
 
     public void stampSticker(StampStickerRequest stampStickerRequest){
@@ -31,8 +32,12 @@ public class PraiseStickerService {
     }
 
     //보드판 생성
-    private int createBoardCommon(BoardParam boardParam){
-        return praiseStickerMapper.createBoard(boardParam);
+    private BoardResult createBoardCommon(BoardParam boardParam){
+        BoardResult board = praiseStickerMapper.createBoard(boardParam);
+        if(board.getPlacedStickers() == null || board.getPlacedStickers().isEmpty()){
+            board.setPlacedStickers(new ArrayList<>());
+        }
+        return board;
     }
 
     //스티커 찍기

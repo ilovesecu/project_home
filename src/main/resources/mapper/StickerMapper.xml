@@ -3,11 +3,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ilovepc.project_home.repository.PraiseStickerMapper">
-    <insert id="createBoard" parameterType="com.ilovepc.project_home.web.sticker.vo.BoardParam">
-        INSERT INTO home_project.praise_boards(user_no,title,goal,total_slots,reward_item)
-        VALUES (#{userNo},#{title},#{goal},#{totalSlots},#{rewardItem})
-    </insert>
-    <insert id="stampSticker" parameterType="com.ilovepc.project_home.web.sticker.vo.StampStickerParam">
+    <insert id="stampSticker" parameterType="com.ilovepc.project_home.web.sticker.vo.StampStickerParam"
+        useGeneratedKeys="true" keyProperty="slotId">
         INSERT INTO home_project.praise_stickers(board_id, user_no, slot_id, sticker_url)
         VALUES (#{boardId},#{userNo},#{slotId},#{stickerUrl})
     </insert>
@@ -36,9 +33,16 @@
             b.id AS board_id, b.title, b.goal, b.reward_item, b.is_rewarded,
             b.status, b.total_slots, b.created_at, b.completed_at,
             u1.nickname, s.slot_id, s.sticker_url, s.stamped_at
-        FROM home_project.praise_boards b
-                 INNER JOIN home_project.praise_stickers s ON b.id = s.board_id
-                 INNER JOIN home_project.users u1 ON s.user_no = u1.user_no
-        WHERE b.status = 'IN_PROGRESS';
+        FROM (
+                 SELECT
+                     *
+                 FROM home_project.praise_boards
+                 WHERE status = 'IN_PROGRESS'
+                 ORDER BY created_at DESC
+                 LIMIT 10
+             )b
+                 LEFT JOIN home_project.praise_stickers s ON b.id = s.board_id
+                 LEFT JOIN home_project.users u1 ON s.user_no = u1.user_no
+        ORDER BY b.created_at DESC, s.slot_id ASC;
     </select>
 </mapper>

@@ -22,8 +22,8 @@ public class PraiseStickerController {
 
     @PostMapping("/board")
     public ApiResponse<?> createBoard(@Valid @RequestBody BoardRequest boardRequest, BindingResult result){
-        praiseStickerService.createBoard(boardRequest);
-        return ApiResponse.success();
+        BoardResult board = praiseStickerService.createBoard(boardRequest);
+        return ApiResponse.success(board);
     }
 
     @PostMapping("/sticker")

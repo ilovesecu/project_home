@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class BoardResult {
-    private Long id;             // '보드판 고유 ID'
+    private Long    id;             // '보드판 고유 ID'
     //private Long userNo;         // '사용자 번호'
     private String title;          //'보드판 제목'
     private String goal;           // '칭찬 목표'
