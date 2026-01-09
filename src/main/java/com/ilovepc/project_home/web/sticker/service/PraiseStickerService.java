@@ -1,13 +1,12 @@
 package com.ilovepc.project_home.web.sticker.service;
 
 import com.ilovepc.project_home.repository.PraiseStickerMapper;
-import com.ilovepc.project_home.web.sticker.vo.BoardParam;
-import com.ilovepc.project_home.web.sticker.vo.BoardRequest;
-import com.ilovepc.project_home.web.sticker.vo.StampStickerParam;
-import com.ilovepc.project_home.web.sticker.vo.StampStickerRequest;
+import com.ilovepc.project_home.web.sticker.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -17,14 +16,19 @@ public class PraiseStickerService {
 
     public void createBoard(BoardRequest boardRequest){
         //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        this.createBoardCommon(boardRequest.buildParam(1L));
+        this.createBoardCommon(boardRequest.buildParam(5L));
     }
 
     public void stampSticker(StampStickerRequest stampStickerRequest){
         //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        this.stampStickerCommon(stampStickerRequest.buildParam(1L));
+        this.stampStickerCommon(stampStickerRequest.buildParam(6L));
     }
 
+    public List<BoardResult> getBoardSticker(){
+        List<BoardResult> inProgress = praiseStickerMapper.getBoards("IN_PROGRESS");
+        log.error("progress:{}",inProgress);
+        return inProgress;
+    }
 
     //보드판 생성
     private int createBoardCommon(BoardParam boardParam){
