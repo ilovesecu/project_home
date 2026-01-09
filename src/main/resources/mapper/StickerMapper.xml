@@ -3,12 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ilovepc.project_home.repository.PraiseStickerMapper">
-    <insert id="stampSticker" parameterType="com.ilovepc.project_home.web.sticker.vo.StampStickerParam"
-        useGeneratedKeys="true" keyProperty="slotId">
-        INSERT INTO home_project.praise_stickers(board_id, user_no, slot_id, sticker_url)
-        VALUES (#{boardId},#{userNo},#{slotId},#{stickerUrl})
-    </insert>
-
     <resultMap id="BoardStickerMap" type="com.ilovepc.project_home.web.sticker.vo.BoardResult">
         <id property="id" column="board_id"/>
         <result property="title" column="title"/>

@@ -20,14 +20,14 @@ public class PraiseStickerService {
         return this.createBoardCommon(boardRequest.buildParam(5L));
     }
 
-    public void stampSticker(StampStickerRequest stampStickerRequest){
+    public StampStickerResult stampSticker(StampStickerRequest stampStickerRequest){
         //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        this.stampStickerCommon(stampStickerRequest.buildParam(6L));
+        StampStickerResult stampStickerResult = this.stampStickerCommon(stampStickerRequest.buildParam(6L));
+        return stampStickerResult;
     }
 
     public List<BoardResult> getBoardSticker(){
         List<BoardResult> inProgress = praiseStickerMapper.getBoards("IN_PROGRESS");
-        log.error("progress:{}",inProgress);
         return inProgress;
     }
 
@@ -41,7 +41,7 @@ public class PraiseStickerService {
     }
 
     //스티커 찍기
-    private int stampStickerCommon(StampStickerParam param){
+    private StampStickerResult stampStickerCommon(StampStickerParam param){
         return praiseStickerMapper.stampSticker(param);
     }
 }
