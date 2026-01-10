@@ -1,11 +1,16 @@
 package com.ilovepc.project_home.web.auth.controller;
 
+import com.ilovepc.project_home.web.auth.service.AuthService;
 import com.ilovepc.project_home.web.auth.service.SignUpService;
 import com.ilovepc.project_home.web.auth.vo.signup.SignUpRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,6 +22,7 @@ public class AuthController {
     // 여기서는 간단히 Spring Security의 기본 AuthenticationManager를 사용한다고 가정합니다.
     // 하지만 JWT에서는 Custom AuthenticationProvider나 직접 인증 로직이 필요할 수 있습니다.
     private final SignUpService signUpService;
+    private final AuthService authService;
 
     @GetMapping("/hello")
     public String hello() {
@@ -27,5 +33,10 @@ public class AuthController {
     public String signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         signUpService.signUp(signUpRequest);
         return "signup";
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(HttpServletRequest request){
+        return authService.reissueAccessToken(request);
     }
 }

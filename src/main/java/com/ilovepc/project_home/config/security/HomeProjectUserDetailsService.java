@@ -57,7 +57,9 @@ public class HomeProjectUserDetailsService implements UserDetailsService {
 
     private UserDetails createUserDetails(User user) {
         return HomeProjectUserDetails.builder()
+                .userNo(user.getUserNo())
                 .email(user.getEmail())
+                .nickname(user.getNickname())
                 .password(user.getPassword())
                 .createdAt(user.getCreatedAt())
                 .emailVerifiedYn(user.getEmailVerifiedYn())
