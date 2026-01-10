@@ -67,13 +67,13 @@ public class HomeProjectAuthenticationFilter extends AbstractAuthenticationProce
         // 4. 부가 정보 설정 (IP, 세션 ID 등)
         setDetails(request, authRequest);
 
-        // 5. AuthenticationManager에게 검증 요청 -> Provider로 넘어감
-        return this.getAuthenticationManager().authenticate(authRequest);
-
         // 로그인 이전에 로그아웃을 여기서 해준다.
         //sisoPacketService.sendPacket("logout",principal.getMemNo(),"{}");
         //sisoPacketService.sendMultiChatPacket("logout",principal.getMemNo(),"{}");
-        //return authenticate;
+
+
+        // 5. AuthenticationManager에게 검증 요청 -> Provider로 넘어감
+        return this.getAuthenticationManager().authenticate(authRequest);
     }
 
     // 부가 정보 셋팅용 헬퍼 메서드

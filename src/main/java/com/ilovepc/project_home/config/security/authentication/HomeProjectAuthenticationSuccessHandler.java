@@ -43,13 +43,22 @@ public class HomeProjectAuthenticationSuccessHandler implements AuthenticationSu
         //3. Refresh Token을 Redis에 저장
         refreshTokenService.saveToken(username, refreshToken);
 
+        boolean isSecure = request.isSecure();
         //4. Refresh Token을 HttpOnly 쿠키에 담아 전달
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true) //HTTPS환경에서만 사용
-                .path("/api/auth/reissue")
-                .maxAge(60 * 60 * 24 * 7) //7일 간 유효
-                .build();
+                .path("/api/auth/reissue") // 리프레시 토큰 발급 경로로 제한 (보안 강화)
+                .maxAge(60 * 60 * 24 * 7); //7일 간 유효
+        if(isSecure){ //HTTPS 환경 (실서버)
+            cookieBuilder.secure(true).sameSite("None");
+        }else{ //HTTP 환경
+            cookieBuilder.path("/");
+            cookieBuilder.maxAge(60);
+            cookieBuilder.secure(false).sameSite("Lax");
+        }
+        ResponseCookie cookie = cookieBuilder.build();
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString());
+
 
         //5. Access Token을 JSON 본문으로 응답
         response.setContentType("application/json;charset=UTF-8");
