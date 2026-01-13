@@ -92,7 +92,7 @@ public class JwtUtil {
                         .collect(Collectors.toSet());
         UserDetails principal = new User(claims.getSubject(),"", authorities);*/
 
-        List<GrantedAuthority> grantedAuthorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(""))
+        List<GrantedAuthority> grantedAuthorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 

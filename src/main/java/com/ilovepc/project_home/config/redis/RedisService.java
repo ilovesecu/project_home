@@ -24,9 +24,12 @@ public class RedisService {
 
     public void saveRedisData(String namespace, String key, Object value, long ttl){
         try{
+            //String 타입은 toJson없이 바로 저장 - toJson을 태우면 큰 따옴표("")가 포함되어 이상해짐.
+            String valueToSave = (value instanceof String) ? (String) value : toJson(value);
+
             redisTemplate.opsForValue().set(
                     namespace + key,
-                    toJson(value),
+                    valueToSave,
                     ttl,
                     TimeUnit.MILLISECONDS
             );
