@@ -8,8 +8,8 @@ spring:
 
 jwt:
   secret: 'YVlvdXJWZXJ5TG9uZ0FuZENvbXBsZXhTZWNyZXRLZXlGb3JIUzUxMkFsZ29yaXRobU11c3RCZUF0TGVhc3Q2NEJ5dGVz'
-  access-token-validity: 3600000 # 1일 (ms)
-  refresh-token-validity: 604800000 # 7일 (ms)
+  access-token-validity: 30000 #3600000 # 1일 (ms)
+  refresh-token-validity: 60000 #604800000 # 7일 (ms)
 
 rdb:
   master:

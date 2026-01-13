@@ -37,8 +37,8 @@ public class HomeProjectAuthenticationSuccessHandler implements AuthenticationSu
         String username = userDetails.getUsername();
 
         //2. AT & RT 생성
-        String accessToken = jwtUtil.createAccessToken(username, userDetails.getAuthorities());
-        String refreshToken = jwtUtil.createRefreshToken(username, userDetails.getAuthorities());
+        String accessToken = jwtUtil.createAccessToken(username, userDetails.getAuthorities(), userDetails.getNickname(), userDetails.getUserNo(),userDetails.getEmailVerifiedYn(), userDetails.getCreatedAt());
+        String refreshToken = jwtUtil.createRefreshToken(username, userDetails.getAuthorities(), userDetails.getNickname(), userDetails.getUserNo(),userDetails.getEmailVerifiedYn(), userDetails.getCreatedAt());
 
         //3. Refresh Token을 Redis에 저장
         refreshTokenService.saveToken(username, refreshToken);

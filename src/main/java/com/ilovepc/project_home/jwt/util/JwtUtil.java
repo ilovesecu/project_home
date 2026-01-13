@@ -1,5 +1,6 @@
 package com.ilovepc.project_home.jwt.util;
 
+import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.config.security.vo.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -42,13 +43,13 @@ public class JwtUtil {
     }
 
     //엑세스 토큰 생성
-    public String createAccessToken(String email, Collection<? extends GrantedAuthority> roles) {
-        return createToken(email, roles, accessTokenValidity);
+    public String createAccessToken(String email, Collection<? extends GrantedAuthority> roles, String nickname, int userNo, String emailVerifiedYn, String createdAt) {
+        return createToken(email, roles, accessTokenValidity, nickname, userNo, emailVerifiedYn, createdAt);
     }
 
     //리프레시 토큰 생성
-    public String createRefreshToken(String email, Collection<? extends GrantedAuthority> roles) {
-        return createToken(email, roles, refreshTokenValidity);
+    public String createRefreshToken(String email, Collection<? extends GrantedAuthority> roles, String nickname, int userNo, String emailVerifiedYn, String createdAt) {
+        return createToken(email, roles, refreshTokenValidity, nickname, userNo, emailVerifiedYn, createdAt);
     }
 
     //헤더에서 토큰 추출
@@ -86,12 +87,24 @@ public class JwtUtil {
             throw new RuntimeException("Token without authorization information");
         }
         //클레임에서 권한정보 가져오기
-        Collection<?  extends GrantedAuthority> authorities =
+        /*Collection<?  extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(""))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toSet());
-        UserDetails principal = new User(claims.getSubject(),"", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
+        UserDetails principal = new User(claims.getSubject(),"", authorities);*/
+
+        List<GrantedAuthority> grantedAuthorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(""))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        String email = claims.getSubject();
+        int userNo = claims.get("userNo", Integer.class);       // 토큰에 넣었던 키값
+        String nickname = claims.get("nickname", String.class);
+        String emailVerifiedYn = claims.get("emailVerifiedYn", String.class);
+        String createdAt = claims.get("createdAt", String.class);
+
+        HomeProjectUserDetails projectUserDetails = new HomeProjectUserDetails(userNo, email, nickname, "", createdAt, emailVerifiedYn, grantedAuthorities);
+        return new UsernamePasswordAuthenticationToken(projectUserDetails, "", projectUserDetails.getAuthorities());
     }
 
     //토큰에서 Claims 추출
@@ -110,7 +123,7 @@ public class JwtUtil {
     }
 
     //토큰 만들어주는 메소드
-    private String createToken(String email, Collection<? extends GrantedAuthority> roles, long validity) {
+    private String createToken(String email, Collection<? extends GrantedAuthority> roles, long validity, String nickname, int userNo, String emailVerifiedYn, String createdAt) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + validity);
 
@@ -119,6 +132,20 @@ public class JwtUtil {
                 .setIssuedAt(now)       //토큰 발급시간
                 .setExpiration(expiration) //토큰 만료시간
                 .signWith(key, SignatureAlgorithm.HS512);
+
+        //커스텀 클레임(Claims) 추가
+        if(nickname != null){
+            builder.claim("nickname", nickname);
+        }
+        if(userNo > 0){
+            builder.claim("userNo", userNo);
+        }
+        if(emailVerifiedYn != null){
+            builder.claim("emailVerifiedYn", emailVerifiedYn);
+        }
+        if(createdAt != null){
+            builder.claim("createdAt", createdAt);
+        }
 
         // Role이 있다면 claims에 추가한다.
         if(roles != null && !roles.isEmpty()) {

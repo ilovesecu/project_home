@@ -56,7 +56,7 @@ public class AuthService {
 
         //4. 인증성공 - 새로운 AccessToken 생성
         HomeProjectUserDetails userDetails = (HomeProjectUserDetails)homeProjectUserDetailsService.loadUserByUsername(username);
-        String accessToken = jwtUtil.createAccessToken(userDetails.getUsername(), userDetails.getAuthorities());
+        String accessToken = jwtUtil.createAccessToken(userDetails.getUsername(), userDetails.getAuthorities(), userDetails.getNickname(), userDetails.getUserNo(), userDetails.getEmailVerifiedYn(), userDetails.getCreatedAt());
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 }
