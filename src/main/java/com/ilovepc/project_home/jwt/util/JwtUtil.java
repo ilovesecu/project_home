@@ -2,6 +2,7 @@ package com.ilovepc.project_home.jwt.util;
 
 import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.config.security.vo.Role;
+import com.ilovepc.project_home.config.security.vo.jwt.JwtCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -62,21 +63,19 @@ public class JwtUtil {
     }
     
     //토큰 검증
-    public boolean validateToken(String token) {
+    public JwtCode validateToken(String token) {
         try{
             //서명검증, 만료시간 검증을 통해 유효한 토큰인지 판별
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        }catch(SecurityException | MalformedJwtException e){
-            log.warn("Invalid JWT signature");
+            return JwtCode.ACCESS;
         }catch(ExpiredJwtException e){
             log.warn("Expired JWT Token");
-        }catch(UnsupportedJwtException e){
-            log.warn("Unsupported JWT Token");
-        }catch(IllegalArgumentException e){
-            log.warn("JWT claims string is empty.");
+            return JwtCode.EXPIRED;
+        }catch (JwtException | IllegalArgumentException e) {
+            // 나머지 예외(Malformed, Unsupported 등)는 하나로 퉁쳐서 로그 찍고 DENIED 리턴
+            log.warn("Invalid JWT Token: {}", e.getMessage());
+            return JwtCode.DENIED;
         }
-        return false;
     }
 
     //토큰에서 인증정보 조회

@@ -1,9 +1,7 @@
 package com.ilovepc.project_home.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationFailureHandler;
-import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationProvider;
-import com.ilovepc.project_home.config.security.authentication.HomeProjectAuthenticationSuccessHandler;
+import com.ilovepc.project_home.config.security.authentication.*;
 import com.ilovepc.project_home.config.security.filter.HomeProjectAuthenticationFilter;
 import com.ilovepc.project_home.config.security.filter.JwtAuthenticationFilter;
 import com.ilovepc.project_home.config.security.vo.Role;
@@ -14,11 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -39,6 +35,8 @@ public class SecurityConfig {
     private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     String[] publicUrls = {
             "/api/auth/**",
@@ -127,10 +125,10 @@ public class SecurityConfig {
         );
 
         // (추가) 커스텀 예외 처리 핸들러 (선택)
-        // http.exceptionHandling(ex -> ex
-        //         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // 401
-        //         .accessDeniedHandler(new JwtAccessDeniedHandler())        // 403
-        // );
+         http.exceptionHandling(ex -> ex
+                 .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 401
+                 .accessDeniedHandler(jwtAccessDeniedHandler)        // 403
+        );
         return http.build();
     }
 
