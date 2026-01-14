@@ -19,15 +19,18 @@ public class HomeProjectAuthenticationSuccessHandler implements AuthenticationSu
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final ObjectMapper objectMapper;
+    private final long refreshTokenValidity;
 
     public HomeProjectAuthenticationSuccessHandler(
             JwtUtil jwtUtil,
             RefreshTokenService refreshTokenService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            long refreshTokenValidity
     ){
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.objectMapper = objectMapper;
+        this.refreshTokenValidity = refreshTokenValidity;
     }
 
     @Override
@@ -48,12 +51,12 @@ public class HomeProjectAuthenticationSuccessHandler implements AuthenticationSu
         ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .path("/api/auth/reissue") // 리프레시 토큰 발급 경로로 제한 (보안 강화)
-                .maxAge(60 * 60 * 24 * 7); //7일 간 유효
+                .maxAge(refreshTokenValidity / 1000); //7일 간 유효
         if(isSecure){ //HTTPS 환경 (실서버)
             cookieBuilder.secure(true).sameSite("None");
         }else{ //HTTP 환경
             cookieBuilder.path("/");
-            cookieBuilder.maxAge(60);
+            cookieBuilder.maxAge(refreshTokenValidity / 1000);
             cookieBuilder.secure(false).sameSite("Lax");
         }
         ResponseCookie cookie = cookieBuilder.build();

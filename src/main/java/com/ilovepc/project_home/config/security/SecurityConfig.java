@@ -8,6 +8,7 @@ import com.ilovepc.project_home.config.security.vo.Role;
 import com.ilovepc.project_home.jwt.service.RefreshTokenService;
 import com.ilovepc.project_home.jwt.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,8 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    @Value("${jwt.refresh-token-validity}")
+    private long refreshTokenValidity;
 
     String[] publicUrls = {
             "/api/auth/**",
@@ -72,7 +75,7 @@ public class SecurityConfig {
         // Manager 주입
         filter.setAuthenticationManager(authenticationManager());
         //Handler 주입
-        filter.setAuthenticationSuccessHandler(new HomeProjectAuthenticationSuccessHandler(jwtUtil, refreshTokenService, objectMapper));
+        filter.setAuthenticationSuccessHandler(new HomeProjectAuthenticationSuccessHandler(jwtUtil, refreshTokenService, objectMapper, refreshTokenValidity));
         filter.setAuthenticationFailureHandler(new HomeProjectAuthenticationFailureHandler(objectMapper));
 
         // 필요에 따라 SecurityContextRepository도 설정합니다.
