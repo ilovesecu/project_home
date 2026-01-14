@@ -8,7 +8,7 @@ public class StampStickerRequest {
     private int slotId;                    //슬롯 ID (1~N)
     private String stickerUrl;                //스티커 이미지 경로
 
-    public StampStickerParam buildParam(Long userNo){
+    public StampStickerParam buildParam(int userNo){
         return StampStickerParam.builder()
                 .userNo(userNo)
                 .boardId(boardId)

@@ -9,7 +9,7 @@ public class BoardRequest {
     private int totalSlots;     // '전체 칸 수'
     private String rewardItem;     //'보상 상품 내용'
 
-    public BoardParam buildParam(Long userNo){
+    public BoardParam buildParam(int userNo){
         return BoardParam.builder()
                 .userNo(userNo)
                 .title(title)

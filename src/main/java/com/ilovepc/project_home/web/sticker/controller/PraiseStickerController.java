@@ -24,16 +24,17 @@ public class PraiseStickerController {
     private final PraiseStickerService praiseStickerService;
 
     @PostMapping("/board")
-    public ApiResponse<BoardResult> createBoard(@Valid @RequestBody BoardRequest boardRequest, BindingResult result){
-        BoardResult board = praiseStickerService.createBoard(boardRequest);
+    public ApiResponse<BoardResult> createBoard(@Valid @RequestBody BoardRequest boardRequest, BindingResult result,
+                                                @AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails){
+        BoardResult board = praiseStickerService.createBoard(boardRequest, homeProjectUserDetails);
         return ApiResponse.success(board);
     }
 
     @PostMapping("/sticker")
     public ApiResponse<StampStickerResult> stampSticker(@Valid @RequestBody StampStickerRequest stampStickerRequest, BindingResult result,
                                                         @AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails){
-        StampStickerResult stampStickerResult = praiseStickerService.stampSticker(stampStickerRequest);
         log.error("이 사람이 요청함:",homeProjectUserDetails.getUsername());
+        StampStickerResult stampStickerResult = praiseStickerService.stampSticker(stampStickerRequest, homeProjectUserDetails);
         return ApiResponse.success(stampStickerResult);
     }
 

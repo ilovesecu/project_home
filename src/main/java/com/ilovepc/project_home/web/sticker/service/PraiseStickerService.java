@@ -1,5 +1,6 @@
 package com.ilovepc.project_home.web.sticker.service;
 
+import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.repository.PraiseStickerMapper;
 import com.ilovepc.project_home.web.sticker.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +16,14 @@ import java.util.List;
 public class PraiseStickerService {
     private final PraiseStickerMapper praiseStickerMapper;
 
-    public BoardResult createBoard(BoardRequest boardRequest){
-        //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        return this.createBoardCommon(boardRequest.buildParam(5L));
+    public BoardResult createBoard(BoardRequest boardRequest, HomeProjectUserDetails homeProjectUserDetails){
+        int userNo = homeProjectUserDetails.getUserNo();
+        return this.createBoardCommon(boardRequest.buildParam(userNo));
     }
 
-    public StampStickerResult stampSticker(StampStickerRequest stampStickerRequest){
-        //TODO 사용자 받아서 userNo 하드코딩 한거 대체하기
-        StampStickerResult stampStickerResult = this.stampStickerCommon(stampStickerRequest.buildParam(6L));
+    public StampStickerResult stampSticker(StampStickerRequest stampStickerRequest, HomeProjectUserDetails homeProjectUserDetails){
+        int userNo = homeProjectUserDetails.getUserNo();
+        StampStickerResult stampStickerResult = this.stampStickerCommon(stampStickerRequest.buildParam(userNo));
         return stampStickerResult;
     }
 
