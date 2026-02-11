@@ -151,4 +151,10 @@
     <update id="toggleTask">
         UPDATE home_project.todo_tasks SET status = 1 - status WHERE id = #{taskId};
     </update>
+
+
+    <select id="getUnfinishedTodos" resultMap="KeywordWithTasksMap" statementType="CALLABLE">
+        { CALL home_project.todo_unfinished_sel() }
+    </select>
+
 </mapper>

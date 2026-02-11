@@ -5,7 +5,8 @@ import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.todo.service.TodoService;
 import com.ilovepc.project_home.web.todo.vo.TodoKeywordResult;
 import com.ilovepc.project_home.web.todo.vo.TodoMatterRequest;
-import com.ilovepc.project_home.web.todo.vo.TodoMatterResponse;
+import com.ilovepc.project_home.web.todo.vo.response.TodoBotUnfinishedResponse;
+import com.ilovepc.project_home.web.todo.vo.response.TodoMatterResponse;
 import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
 import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordInsResultInfo;
 import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordRequest;
@@ -97,5 +98,12 @@ public class TodoController {
     public ApiResponse<Void> deleteKeyword(@PathVariable("keywordId")int keywordId){
         todoService.deleteKeyword(keywordId);
         return ApiResponse.success();
+    }
+
+    //아직 완료되지 않은 TodoList 가져가기 - Bot에서 가져가서 MatterMost에 뿌려주는 용도
+    @GetMapping(value = "/unfinish/items")
+    public ApiResponse<TodoBotUnfinishedResponse> getUnfinishedTodoListAll(){
+        TodoBotUnfinishedResponse unfinishedTodoListAll = todoService.getUnfinishedTodoListAll();
+        return ApiResponse.success(unfinishedTodoListAll);
     }
 }
