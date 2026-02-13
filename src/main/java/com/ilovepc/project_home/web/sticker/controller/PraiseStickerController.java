@@ -43,4 +43,13 @@ public class PraiseStickerController {
         log.error("이 사람이 요청함 boardSticker:{}",homeProjectUserDetails.getUsername());
         return ApiResponse.success(boardSticker);
     }
+
+    @DeleteMapping("/stickers")
+    public ApiResponse<?> deleteBoardSticker(@AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails,
+                                             @RequestParam("boardId")int boardId,
+                                             @RequestParam("slotIds")int[] slotIds){
+        log.error("boardId", boardId);
+        log.error("slotIds", slotIds);
+        return null;
+    }
 }
