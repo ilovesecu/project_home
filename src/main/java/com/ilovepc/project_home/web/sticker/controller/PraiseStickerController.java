@@ -31,11 +31,10 @@ public class PraiseStickerController {
     }
 
     @PostMapping("/sticker")
-    public ApiResponse<StampStickerResult> stampSticker(@Valid @RequestBody StampStickerRequest stampStickerRequest, BindingResult result,
+    public ApiResponse<?> stampSticker(@Valid @RequestBody StampStickerRequest stampStickerRequest, BindingResult result,
                                                         @AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails){
         log.error("이 사람이 요청함:",homeProjectUserDetails.getUsername());
-        StampStickerResult stampStickerResult = praiseStickerService.stampSticker(stampStickerRequest, homeProjectUserDetails);
-        return ApiResponse.success(stampStickerResult);
+        return praiseStickerService.stampSticker(stampStickerRequest, homeProjectUserDetails);
     }
 
     @GetMapping("/boardSticker")
