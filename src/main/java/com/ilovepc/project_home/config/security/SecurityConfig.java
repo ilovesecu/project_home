@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/api/wakeUp/**",
             "/api/holiday/month",
             "/api/holiday/today",
-            "/api/todo/**"
+            "/api/todo/**",
+            "/api/dhlottery/**"
             //"/api/praise/**", //TODO 제거 예정
     };
 

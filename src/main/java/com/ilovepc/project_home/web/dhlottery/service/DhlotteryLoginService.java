@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.dhlottery.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -27,8 +28,9 @@ import java.util.List;
 public class DhlotteryLoginService {
     private final RestTemplate rt = new RestTemplate();
     private final ObjectMapper om = new ObjectMapper();
+    private final DhlotteryCookieStore cookieStore;
 
-    public void loginAndGetCookie(String username, String password){
+    public List<String> loginAndGetCookie(String username, String password){
         try{
             log.info("1. RSA 공개키(Modules, Exponent)요청 중.... ");
             String rsaUrl = "https://dhlottery.co.kr/login/selectRsaModulus.do";
@@ -66,22 +68,21 @@ public class DhlotteryLoginService {
             List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
 
             if (cookies != null && !cookies.isEmpty()) {
-                System.out.println("====== [ 획득한 세션 쿠키 ] ======");
+                log.info("====== [ 획득한 세션 쿠키 ] ======");
                 for (String cookie : cookies) {
-                    System.out.println(cookie);
+                    log.info(cookie);
                 }
-                System.out.println("==================================");
-                // TODO: 획득한 쿠키(JSESSIONID 등)를 전역 변수나 세션에 저장하여
-                // 이후 마이페이지 조회나 다른 API 통신 헤더에 'Cookie'로 넣어주면 됩니다!
+                log.info("==================================");
+                cookieStore.saveCookies(username, cookies);
+                return cookies;
             } else {
-                System.out.println("No cookie");
+                log.error("No cookie userID:{}", username);
             }
-
             log.error("dataNode:{}",dataNode);
-
         }catch (Exception e){
             e.printStackTrace();
         }
+        return null;
     }
 
     private String encryptRSA(String plainText, String hexModulus, String hexExponent) throws Exception {
@@ -109,7 +110,8 @@ public class DhlotteryLoginService {
     }
 
     public static void main(String[] args) {
-        DhlotteryLoginService a = new DhlotteryLoginService();
+        DhlotteryCookieStore cookieStore = new DhlotteryCookieStore();
+        DhlotteryLoginService a = new DhlotteryLoginService(cookieStore);
         a.loginAndGetCookie("bonobono94", "Wjdtmdwn94!");
     }
 
