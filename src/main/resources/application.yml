@@ -38,6 +38,10 @@ apis:
   spcdeEncode: '0CckuwA4JXGq5s8nqHtlutBhsr8wf0xl7yPUS%2B4yybjSb7fYCinkb%2BL6vfqKvlTPaus%2Fc6Lltbvf0Lt8Heo18Q%3D%3D'
   spcdeDecode: 'ENC(EW+tRA5yQP8ubkPzNKyIWzMcWtqviduG8ZIBZPzeVwh/V1IM+Oli9oJ36aFLqSHKfIGAPvjAsNzJ7XoWbCczNifcxfHgmgtbUXonEH7/3yWz/rYYd1kxkTHKZypXUCu3pSKluGYa70A=)'
 
+externalCredencial:
+  dhlottery:
+    secretId: 'ENC(qllk3UJTQ68fQCEojHcwTkaAggG6cu7C)'
+    secretPW: 'ENC(2XuJkrbKkNdBdZCLlSV3YD7e8RZrqgNR)'
 
 server:
   port: 9495

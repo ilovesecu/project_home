@@ -1,8 +1,12 @@
 package com.ilovepc.project_home.web.dhlottery.controller;
 
+import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.dhlottery.service.DhlotteryBotService;
+import com.ilovepc.project_home.web.dhlottery.vo.LotteryGameHistoryResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.LottoLedgerSearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,11 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class DhlotteryController {
     private final DhlotteryBotService dhlotteryBotService;
+    @Value("${externalCredencial.dhlottery.secretId}")
+    private String secretId;
+    @Value("${externalCredencial.dhlottery.secretPW}")
+    private String secretPW;
 
 
-    @GetMapping("/test")
-    public String test(){
-        String bonobono94 = dhlotteryBotService.getLedger("bonobono94", "Wjdtmdwn94!");
-        return bonobono94;
+    @GetMapping("/myGameHistory")
+    public ApiResponse<?> getMyGameHistory(LottoLedgerSearchVO searchVO) {
+        LotteryGameHistoryResponse response = dhlotteryBotService.getLedger(secretId, secretPW, searchVO);
+        return ApiResponse.success(response);
     }
 }

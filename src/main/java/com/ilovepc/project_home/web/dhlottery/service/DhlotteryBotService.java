@@ -2,6 +2,8 @@ package com.ilovepc.project_home.web.dhlottery.service;
 
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryHttpFactory;
+import com.ilovepc.project_home.web.dhlottery.vo.LotteryGameHistoryResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.LottoLedgerSearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -29,7 +31,16 @@ public class DhlotteryBotService {
         this.loginService = loginService;
     }
 
-    public String getLedger(String userId, String password){
+
+
+
+
+    public void getTickerInfo(String barcode){
+        String targetUrl = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do?ntslOrdrNo=2026022300554412078&srchStrDt=20260218&srchEndDt=20260225&barcd=628558293666620275202908649155&_=1771999762545";
+
+    }
+
+    public LotteryGameHistoryResponse getLedger(String userId, String password, LottoLedgerSearchVO searchVO){
         String targetUrl = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do?srchStrDt=20260215&srchEndDt=20260223&sort=&ltGdsCd=&winResult=&lramSmam=&pageNum=1&recordCountPerPage=10&_=1771694446306";
 
         List<String> userCookies = cookieStore.getCookies(userId);
@@ -45,12 +56,13 @@ public class DhlotteryBotService {
 
         HttpEntity<String> entity = httpFactory.createEntityWithCookie(userCookies);
         // API 요청 (쿠키가 섞이지 않고 안전하게 전송됨)
-        ResponseEntity<String> response = restTemplate.exchange(
+        ResponseEntity<LotteryGameHistoryResponse> response = restTemplate.exchange(
                 targetUrl,
                 HttpMethod.GET,
                 entity,
-                String.class
+                LotteryGameHistoryResponse.class
         );
+
         return response.getBody();
     }
 }

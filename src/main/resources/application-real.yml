@@ -37,6 +37,10 @@ resilience4j:
        redis-set:
          base-config: default
 
+externalCredencial:
+  dhlottery:
+    secretId: 'ENC(qllk3UJTQ68fQCEojHcwTkaAggG6cu7C)'
+    secretPW: 'ENC(2XuJkrbKkNdBdZCLlSV3YD7e8RZrqgNR)'
 
 server:
   port: 9495

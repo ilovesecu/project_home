@@ -1,6 +1,11 @@
 package com.ilovepc.project_home.web.dhlottery.vo;
 
 import lombok.Data;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 /*
@@ -37,4 +42,23 @@ public class LottoLedgerSearchVO {
 
     // 캐시 방지용 타임스탬프 (언더바 파라미터)
     private long timeStamp; // _=1771834717992
+
+    public void fillDefaultValues(){
+        if( (srchStrDt == null || StringUtils.hasText(srchStrDt)) ||
+            (srchEndDt == null || StringUtils.hasText(srchEndDt))){
+            LocalDate nowDate = LocalDate.now();
+            LocalDate before7Day = nowDate.minusDays(7);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+            String now = formatter.format(nowDate);
+            String before7 = formatter.format(before7Day);
+
+            this.setSrchStrDt(now);
+            this.setSrchEndDt(before7);
+        }
+
+
+
+
+    }
 }
