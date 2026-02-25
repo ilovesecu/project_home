@@ -35,10 +35,17 @@ public class DhlotteryLoginService {
             log.info("1. RSA 공개키(Modules, Exponent)요청 중.... ");
             String rsaUrl = "https://dhlottery.co.kr/login/selectRsaModulus.do";
 
-            String rsaJsonResponse = rt.getForObject(rsaUrl, String.class);
-            JsonNode rootNode = om.readTree(rsaJsonResponse);
-            JsonNode dataNode = rootNode.get("data");
+            ResponseEntity<String> rsaResponse = rt.getForEntity(rsaUrl, String.class);
+            //String rsaJsonResponse = rt.getForObject(rsaUrl, String.class);
 
+            //RSA 공개키 받아올 때 임시 세션쿠키 받아온다.
+            List<String> initCookies = rsaResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+            String sessionCookieStr = extractCookieString(initCookies);
+            //서버는 자기 메모리에 "이 세션 쿠키를 가진 사람의 개인키(PrivateKey)는 이거야!"라고 저장
+            log.info("   -> 획득한 임시 세션: " + sessionCookieStr);
+
+            JsonNode rootNode = om.readTree(rsaResponse.getBody());
+            JsonNode dataNode = rootNode.get("data");
             String rsaModulus = dataNode.get("rsaModulus").asText();
             String publicExponent = dataNode.get("publicExponent").asText();
 
@@ -53,6 +60,10 @@ public class DhlotteryLoginService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            headers.add("Referer", "https://www.dhlottery.co.kr"); //레퍼러 없으면 봇으로 인식할지도 모름.
+            if (!sessionCookieStr.isEmpty()) {
+                headers.add("Cookie", sessionCookieStr);
+            }
 
             // 폼 데이터 세팅 (JS 소스와 동일한 파라미터명 사용)
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -107,6 +118,16 @@ public class DhlotteryLoginService {
         }
 
         return hexString.toString();
+    }
+
+    private String extractCookieString(List<String> cookies) {
+        StringBuilder sb = new StringBuilder();
+        if (cookies != null) {
+            for (String cookie : cookies) {
+                sb.append(cookie.split(";")[0]).append("; ");
+            }
+        }
+        return sb.toString();
     }
 
     public static void main(String[] args) {

@@ -24,7 +24,7 @@ public class DhlotteryHttpFactory {
             }
             headers.add("Cookie", cookieBuilder.toString());
         }
-
+        headers.set("Referer", "https://www.dhlottery.co.kr/login");
         return new HttpEntity<>(headers);
     }
 }
