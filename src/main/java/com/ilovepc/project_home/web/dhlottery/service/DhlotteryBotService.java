@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -41,7 +42,20 @@ public class DhlotteryBotService {
     }
 
     public LotteryGameHistoryResponse getLedger(String userId, String password, LottoLedgerSearchVO searchVO){
-        String targetUrl = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do?srchStrDt=20260215&srchEndDt=20260223&sort=&ltGdsCd=&winResult=&lramSmam=&pageNum=1&recordCountPerPage=10&_=1771694446306";
+        final String API_URL = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do";
+        String uriString = UriComponentsBuilder.fromUriString(API_URL)
+                .queryParam("srchStrDt", searchVO.getSrchStrDt())
+                .queryParam("srchEndDt", searchVO.getSrchEndDt())
+                .queryParam("sort", searchVO.getSort())
+                .queryParam("ltGdsCd", searchVO.getLtGdsCd())
+                .queryParam("winResult", searchVO.getWinResult())
+                .queryParam("lramSmam",searchVO.getLramSmam())
+                .queryParam("pageNum",searchVO.getPageNum())
+                .queryParam("recordCountPerPage",searchVO.getRecordCountPerPage())
+                .queryParam("_",searchVO.getTimeStamp())
+                .build(true) //이미 인코딩했다면 url (Encoding키를 사용했을 떄)
+                .toUriString();
+        //String example = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do?srchStrDt=20260215&srchEndDt=20260223&sort=&ltGdsCd=&winResult=&lramSmam=&pageNum=1&recordCountPerPage=10&_=1771694446306";
 
         List<String> userCookies = cookieStore.getCookies(userId);
         //쿠키가 아예 없으면 바로 로그인
@@ -57,7 +71,7 @@ public class DhlotteryBotService {
         HttpEntity<String> entity = httpFactory.createEntityWithCookie(userCookies);
         // API 요청 (쿠키가 섞이지 않고 안전하게 전송됨)
         ResponseEntity<LotteryGameHistoryResponse> response = restTemplate.exchange(
-                targetUrl,
+                uriString,
                 HttpMethod.GET,
                 entity,
                 LotteryGameHistoryResponse.class

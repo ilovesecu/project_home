@@ -26,7 +26,7 @@ public class LottoLedgerSearchVO {
     private String sort;
 
     // 복권 상품 코드 (Lotto, Pension 등)
-    private String ltGdsCd;
+    private String ltGdsCd; //LP72-연금복권, LO40-로또
 
     // 당첨 결과 상태
     private String winResult;
@@ -44,8 +44,8 @@ public class LottoLedgerSearchVO {
     private long timeStamp; // _=1771834717992
 
     public void fillDefaultValues(){
-        if( (srchStrDt == null || StringUtils.hasText(srchStrDt)) ||
-            (srchEndDt == null || StringUtils.hasText(srchEndDt))){
+        if( (!StringUtils.hasText(srchStrDt)) ||
+            (!StringUtils.hasText(srchEndDt))){
             LocalDate nowDate = LocalDate.now();
             LocalDate before7Day = nowDate.minusDays(7);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -53,12 +53,15 @@ public class LottoLedgerSearchVO {
             String now = formatter.format(nowDate);
             String before7 = formatter.format(before7Day);
 
-            this.setSrchStrDt(now);
-            this.setSrchEndDt(before7);
+            this.setSrchStrDt(before7);
+            this.setSrchEndDt(now);
         }
-
-
-
-
+        if(this.recordCountPerPage == 0){
+            this.setRecordCountPerPage(10);
+        }
+        if(this.pageNum == 0){
+            this.setPageNum(1);
+        }
+        setTimeStamp(System.currentTimeMillis());
     }
 }

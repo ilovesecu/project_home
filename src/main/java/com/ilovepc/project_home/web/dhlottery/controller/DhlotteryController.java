@@ -25,6 +25,7 @@ public class DhlotteryController {
 
     @GetMapping("/myGameHistory")
     public ApiResponse<?> getMyGameHistory(LottoLedgerSearchVO searchVO) {
+        searchVO.fillDefaultValues(); //없는 값을 기본값 채우기
         LotteryGameHistoryResponse response = dhlotteryBotService.getLedger(secretId, secretPW, searchVO);
         return ApiResponse.success(response);
     }

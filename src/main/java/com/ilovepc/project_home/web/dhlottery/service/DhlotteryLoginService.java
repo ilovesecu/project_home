@@ -133,7 +133,6 @@ public class DhlotteryLoginService {
     public static void main(String[] args) {
         DhlotteryCookieStore cookieStore = new DhlotteryCookieStore();
         DhlotteryLoginService a = new DhlotteryLoginService(cookieStore);
-        a.loginAndGetCookie("bonobono94", "Wjdtmdwn94!");
     }
 
 }
