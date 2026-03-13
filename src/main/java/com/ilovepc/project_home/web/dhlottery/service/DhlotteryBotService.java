@@ -11,6 +11,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -48,17 +49,29 @@ public class DhlotteryBotService {
 
 
     //티켓 정보 가져오기 (내가 찍은 번호 같은거)
-    public void getTicketInfo(LottoTicketSearchVO lottoTicketSearchVO){
+    public void getTicketInfo(String userId, String password, LottoTicketSearchVO lottoTicketSearchVO){
         //String targetUrl = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do?ntslOrdrNo=2026022300554412078&srchStrDt=20260218&srchEndDt=20260225&barcd=628558293666620275202908649155&_=1771999762545";
         final String API_URL = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do";
+
+        if(!StringUtils.hasText(lottoTicketSearchVO.getBarcd())){
+            //예외처리 바코드없으면 안됨.
+            return ;
+        }
+        if(!StringUtils.hasText(lottoTicketSearchVO.getNtslOrdrNo())){
+            //예외처리 해당 값 없으면 안됨.
+            return ;
+        }
+
         String uriString = UriComponentsBuilder.fromUriString(API_URL)
                 .queryParam("ntslOrdrNo", lottoTicketSearchVO.getNtslOrdrNo())
+                .queryParam("barcd", lottoTicketSearchVO.getBarcd())
                 .queryParam("srchStrDt", lottoTicketSearchVO.getSrchStrDt())
                 .queryParam("srchEndDt", lottoTicketSearchVO.getSrchEndDt())
                 .queryParam("_",lottoTicketSearchVO.getTimeStamp())
                 .build(true)//이미 인코딩 했을 때 True
                 .toUriString();
 
+        List<String> userCookies = getUserCookieOrLogin(userId, password);
     }
 
     //동행복권 추첨결과 가져오기
