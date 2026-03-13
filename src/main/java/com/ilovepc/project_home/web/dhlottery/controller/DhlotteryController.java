@@ -29,4 +29,10 @@ public class DhlotteryController {
         LotteryGameHistoryResponse response = dhlotteryBotService.getLedger(secretId, secretPW, searchVO);
         return ApiResponse.success(response);
     }
+
+    @GetMapping("/ticket")
+    public ApiResponse<?> getTicket(LottoLedgerSearchVO searchVO) {
+        //dhlotteryBotService.getTicketInfo();
+        return ApiResponse.success();
+    }
 }

@@ -4,6 +4,7 @@ import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryHttpFactory;
 import com.ilovepc.project_home.web.dhlottery.vo.LotteryGameHistoryResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.LottoLedgerSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.LottoTicketSearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -32,15 +33,35 @@ public class DhlotteryBotService {
         this.loginService = loginService;
     }
 
+    private List<String> getUserCookieOrLogin(String userId, String password){
+        List<String> userCookies = cookieStore.getCookies(userId);
+        //쿠키가 아예 없으면 바로 로그인
+        if(userCookies == null || userCookies.isEmpty()){
+            log.info("[{}] 최초 접속, 로그인을 시도합니다.", userId);
+            userCookies = loginService.loginAndGetCookie(userId,password);
+            if(userCookies == null || userCookies.isEmpty()){
+                log.error("로그인에 실패하였습니다. userID:{}", userId);
+                return null;
+            }
+        }
+    }
 
 
-
-
-    public void getTickerInfo(String barcode){
-        String targetUrl = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do?ntslOrdrNo=2026022300554412078&srchStrDt=20260218&srchEndDt=20260225&barcd=628558293666620275202908649155&_=1771999762545";
+    //티켓 정보 가져오기 (내가 찍은 번호 같은거)
+    public void getTicketInfo(LottoTicketSearchVO lottoTicketSearchVO){
+        //String targetUrl = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do?ntslOrdrNo=2026022300554412078&srchStrDt=20260218&srchEndDt=20260225&barcd=628558293666620275202908649155&_=1771999762545";
+        final String API_URL = "https://www.dhlottery.co.kr/mypage/lotto645TicketDetail.do";
+        String uriString = UriComponentsBuilder.fromUriString(API_URL)
+                .queryParam("ntslOrdrNo", lottoTicketSearchVO.getNtslOrdrNo())
+                .queryParam("srchStrDt", lottoTicketSearchVO.getSrchStrDt())
+                .queryParam("srchEndDt", lottoTicketSearchVO.getSrchEndDt())
+                .queryParam("_",lottoTicketSearchVO.getTimeStamp())
+                .build(true)//이미 인코딩 했을 때 True
+                .toUriString();
 
     }
 
+    //동행복권 추첨결과 가져오기
     public LotteryGameHistoryResponse getLedger(String userId, String password, LottoLedgerSearchVO searchVO){
         final String API_URL = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do";
         String uriString = UriComponentsBuilder.fromUriString(API_URL)
@@ -57,7 +78,7 @@ public class DhlotteryBotService {
                 .toUriString();
         //String example = "https://www.dhlottery.co.kr/mypage/selectMyLotteryledger.do?srchStrDt=20260215&srchEndDt=20260223&sort=&ltGdsCd=&winResult=&lramSmam=&pageNum=1&recordCountPerPage=10&_=1771694446306";
 
-        List<String> userCookies = cookieStore.getCookies(userId);
+        /*List<String> userCookies = cookieStore.getCookies(userId);
         //쿠키가 아예 없으면 바로 로그인
         if(userCookies == null || userCookies.isEmpty()){
             log.info("[{}] 최초 접속, 로그인을 시도합니다.", userId);
@@ -66,7 +87,8 @@ public class DhlotteryBotService {
                 log.error("로그인에 실패하였습니다. userID:{}", userId);
                 return null;
             }
-        }
+        }*/
+        List<String> userCookies = getUserCookieOrLogin(userId, password);
 
         HttpEntity<String> entity = httpFactory.createEntityWithCookie(userCookies);
         // API 요청 (쿠키가 섞이지 않고 안전하게 전송됨)
