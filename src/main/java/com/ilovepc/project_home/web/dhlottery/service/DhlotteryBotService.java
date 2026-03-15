@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.dhlottery.service;
 
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryHttpFactory;
+import com.ilovepc.project_home.web.dhlottery.vo.response.drawInfo.LottoDrawResultResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
 import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
@@ -50,6 +51,18 @@ public class DhlotteryBotService {
         return userCookies;
     }
 
+    //바로 이전 회차 로또 정보
+    public LottoDrawResultResponse getPastLottoInfo(){
+        //https://www.dhlottery.co.kr/lt645/selectPstLt645Info.do?_=1773569696079
+        final String API_URL = "https://www.dhlottery.co.kr/lt645/selectPstLt645Info.do";
+        String urlString = UriComponentsBuilder.fromUriString(API_URL)
+                .queryParam("_", System.currentTimeMillis())
+                .build().toUriString();
+        LottoDrawResultResponse lottoDrawResultResponse = sendApiGet(urlString, null, new ParameterizedTypeReference<LottoDrawResultResponse>() {
+        });
+        return lottoDrawResultResponse;
+    }
+
 
     //티켓 정보 가져오기 (내가 찍은 번호 같은거)
     public LotteryTicketInfoResponse<TicketVO> getTicketInfo(String userId, String password, LottoTicketSearchVO lottoTicketSearchVO) {
@@ -59,10 +72,12 @@ public class DhlotteryBotService {
 
             if (!StringUtils.hasText(lottoTicketSearchVO.getBarcd())) {
                 //예외처리 바코드없으면 안됨.
+                log.error("[getTicketInfo] 바코드 정보가 없습니다.");
                 return null;
             }
             if (!StringUtils.hasText(lottoTicketSearchVO.getNtslOrdrNo())) {
                 //예외처리 해당 값 없으면 안됨.
+                log.error("[getTicketInfo] NtslOrdrNo 정보가 없습니다.");
                 return null;
             }
             List<String> userCookies = getUserCookieOrLogin(userId, password);

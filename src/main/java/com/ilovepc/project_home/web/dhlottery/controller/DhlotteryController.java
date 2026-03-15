@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.dhlottery.controller;
 
 import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.dhlottery.service.DhlotteryBotService;
+import com.ilovepc.project_home.web.dhlottery.vo.response.drawInfo.LottoDrawResultResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
 import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
@@ -38,5 +39,11 @@ public class DhlotteryController {
         searchVO.fillDefaultValues();
         LotteryTicketInfoResponse<TicketVO> ticketInfo = dhlotteryBotService.getTicketInfo(secretId, secretPW, searchVO);
         return ApiResponse.success(ticketInfo);
+    }
+
+    @GetMapping("/lt645/past/draw")
+    public ApiResponse<?> getPastDraw(){
+        LottoDrawResultResponse pastLottoInfo = dhlotteryBotService.getPastLottoInfo();
+        return ApiResponse.success(pastLottoInfo);
     }
 }
