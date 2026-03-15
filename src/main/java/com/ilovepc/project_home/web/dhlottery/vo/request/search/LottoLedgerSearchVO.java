@@ -1,10 +1,9 @@
-package com.ilovepc.project_home.web.dhlottery.vo;
+package com.ilovepc.project_home.web.dhlottery.vo.request.search;
 
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 

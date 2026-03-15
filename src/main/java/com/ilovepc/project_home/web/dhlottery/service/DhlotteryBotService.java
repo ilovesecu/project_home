@@ -2,11 +2,13 @@ package com.ilovepc.project_home.web.dhlottery.service;
 
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryHttpFactory;
-import com.ilovepc.project_home.web.dhlottery.vo.LotteryGameHistoryResponse;
-import com.ilovepc.project_home.web.dhlottery.vo.LottoLedgerSearchVO;
-import com.ilovepc.project_home.web.dhlottery.vo.LottoTicketSearchVO;
-import lombok.RequiredArgsConstructor;
+import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.LotteryTicketInfoResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.TicketVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,7 @@ public class DhlotteryBotService {
                 return null;
             }
         }
+        return userCookies;
     }
 
 
@@ -61,7 +64,11 @@ public class DhlotteryBotService {
             //예외처리 해당 값 없으면 안됨.
             return ;
         }
-
+        List<String> userCookies = getUserCookieOrLogin(userId, password);
+        if(userCookies == null || userCookies.isEmpty()){
+            log.error("[getTicketInfo] 로그인 실패! userId:{}", userId);
+            return ;
+        }
         String uriString = UriComponentsBuilder.fromUriString(API_URL)
                 .queryParam("ntslOrdrNo", lottoTicketSearchVO.getNtslOrdrNo())
                 .queryParam("barcd", lottoTicketSearchVO.getBarcd())
@@ -71,7 +78,9 @@ public class DhlotteryBotService {
                 .build(true)//이미 인코딩 했을 때 True
                 .toUriString();
 
-        List<String> userCookies = getUserCookieOrLogin(userId, password);
+        LotteryTicketInfoResponse<TicketVO> lotteryTicketInfoResponse = sendApiGet(uriString, userCookies, new ParameterizedTypeReference<LotteryTicketInfoResponse<TicketVO>>() {
+        });
+        log.error("lotteryTicketInfoResponse:{}", lotteryTicketInfoResponse);
     }
 
     //동행복권 추첨결과 가져오기
@@ -103,15 +112,18 @@ public class DhlotteryBotService {
         }*/
         List<String> userCookies = getUserCookieOrLogin(userId, password);
 
+        return sendApiGet(uriString, userCookies, new ParameterizedTypeReference<LotteryGameHistoryResponse>() {});
+    }
+
+    public<T> T sendApiGet(String uriString, List<String> userCookies, ParameterizedTypeReference<T> responseType){
         HttpEntity<String> entity = httpFactory.createEntityWithCookie(userCookies);
         // API 요청 (쿠키가 섞이지 않고 안전하게 전송됨)
-        ResponseEntity<LotteryGameHistoryResponse> response = restTemplate.exchange(
+        ResponseEntity<T> response = restTemplate.exchange(
                 uriString,
                 HttpMethod.GET,
                 entity,
-                LotteryGameHistoryResponse.class
+                responseType
         );
-
         return response.getBody();
     }
 }

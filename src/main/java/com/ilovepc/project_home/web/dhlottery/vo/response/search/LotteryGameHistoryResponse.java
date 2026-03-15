@@ -1,4 +1,4 @@
-package com.ilovepc.project_home.web.dhlottery.vo;
+package com.ilovepc.project_home.web.dhlottery.vo.response.search;
 
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

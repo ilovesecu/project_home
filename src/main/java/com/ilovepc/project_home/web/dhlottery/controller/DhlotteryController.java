@@ -2,9 +2,9 @@ package com.ilovepc.project_home.web.dhlottery.controller;
 
 import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.dhlottery.service.DhlotteryBotService;
-import com.ilovepc.project_home.web.dhlottery.vo.LotteryGameHistoryResponse;
-import com.ilovepc.project_home.web.dhlottery.vo.LottoLedgerSearchVO;
-import com.ilovepc.project_home.web.dhlottery.vo.LottoTicketSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
