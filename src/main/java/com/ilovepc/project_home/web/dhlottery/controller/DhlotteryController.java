@@ -5,6 +5,8 @@ import com.ilovepc.project_home.web.dhlottery.service.DhlotteryBotService;
 import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
 import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
+import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.LotteryTicketInfoResponse;
+import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.TicketVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +36,7 @@ public class DhlotteryController {
     @GetMapping("/ticket")
     public ApiResponse<?> getTicket(LottoTicketSearchVO searchVO) {
         searchVO.fillDefaultValues();
-        dhlotteryBotService.getTicketInfo(secretId, secretPW,searchVO);
-        return ApiResponse.success();
+        LotteryTicketInfoResponse<TicketVO> ticketInfo = dhlotteryBotService.getTicketInfo(secretId, secretPW, searchVO);
+        return ApiResponse.success(ticketInfo);
     }
 }
