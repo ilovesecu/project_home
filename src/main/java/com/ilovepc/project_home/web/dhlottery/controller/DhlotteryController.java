@@ -43,7 +43,10 @@ public class DhlotteryController {
 
     @GetMapping("/lt645/past/draw")
     public ApiResponse<?> getPastDraw(){
-        LottoDrawResultResponse pastLottoInfo = dhlotteryBotService.getPastLottoInfo();
-        return ApiResponse.success(pastLottoInfo);
+        /*LottoDrawResultResponse pastLottoInfo = dhlotteryBotService.getPastLottoInfoAPI();
+        return ApiResponse.success(pastLottoInfo);*/
+
+        dhlotteryBotService.getPastLottoInfo(0);
+        return ApiResponse.success();
     }
 }

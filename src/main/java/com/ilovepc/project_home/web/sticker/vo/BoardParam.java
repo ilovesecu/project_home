@@ -4,7 +4,6 @@ import com.ilovepc.project_home.config.rdb.annotation.HomeMaster;
 import lombok.Builder;
 
 @Builder
-@HomeMaster
 public class BoardParam {
     private Long   id;    //생성된 key 전달받기용임!
     private int   userNo;         // '사용자 번호'

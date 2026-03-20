@@ -1,13 +1,16 @@
 package com.ilovepc.project_home.web.dhlottery.service;
 
+import com.ilovepc.project_home.repository.DhLotteryMasterMapper;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryCookieStore;
 import com.ilovepc.project_home.web.dhlottery.component.DhlotteryHttpFactory;
+import com.ilovepc.project_home.web.dhlottery.vo.param.LottoResultParam;
 import com.ilovepc.project_home.web.dhlottery.vo.response.drawInfo.LottoDrawResultResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.response.search.LotteryGameHistoryResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.request.search.LottoLedgerSearchVO;
 import com.ilovepc.project_home.web.dhlottery.vo.request.ticket.LottoTicketSearchVO;
 import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.LotteryTicketInfoResponse;
 import com.ilovepc.project_home.web.dhlottery.vo.response.ticketInfo.TicketVO;
+import com.ilovepc.project_home.web.dhlottery.vo.result.LottoDrawVOResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -27,14 +30,17 @@ public class DhlotteryBotService {
     private final DhlotteryHttpFactory httpFactory;
     private final DhlotteryCookieStore cookieStore;
     private final DhlotteryLoginService loginService;
+    private final DhLotteryMasterMapper dhLotteryMasterMapper;
 
     public DhlotteryBotService(DhlotteryHttpFactory httpFactory,
                                DhlotteryCookieStore cookieStore,
-                               DhlotteryLoginService loginService) {
+                               DhlotteryLoginService loginService,
+                               DhLotteryMasterMapper dhLotteryMasterMapper) {
         this.restTemplate = new RestTemplate();
         this.httpFactory = httpFactory;
         this.cookieStore = cookieStore;
         this.loginService = loginService;
+        this.dhLotteryMasterMapper = dhLotteryMasterMapper;
     }
 
     private List<String> getUserCookieOrLogin(String userId, String password) {
@@ -51,8 +57,15 @@ public class DhlotteryBotService {
         return userCookies;
     }
 
-    //바로 이전 회차 로또 정보
-    public LottoDrawResultResponse getPastLottoInfo(){
+    //DB에서 이전 회차 로또 정보 가져오기
+    public void getPastLottoInfo(int ltEpsd) {
+        ltEpsd = 1215;
+        LottoDrawVOResult lottoDrawVOResult = dhLotteryMasterMapper.selectLottoDrawResult(ltEpsd);
+        log.error("{}", lottoDrawVOResult);
+    }
+
+    //바로 이전 회차 로또 정보 가져와서 반환 (최초 1회 DB저장)
+    public LottoDrawResultResponse getPastLottoInfoAPI(){
         //https://www.dhlottery.co.kr/lt645/selectPstLt645Info.do?_=1773569696079
         final String API_URL = "https://www.dhlottery.co.kr/lt645/selectPstLt645Info.do";
         String urlString = UriComponentsBuilder.fromUriString(API_URL)
@@ -60,6 +73,15 @@ public class DhlotteryBotService {
                 .build().toUriString();
         LottoDrawResultResponse lottoDrawResultResponse = sendApiGet(urlString, null, new ParameterizedTypeReference<LottoDrawResultResponse>() {
         });
+
+        if(lottoDrawResultResponse != null && lottoDrawResultResponse.getData() != null && !lottoDrawResultResponse.getData().getList().isEmpty()){
+            List<LottoDrawResultResponse.DrawItem> list = lottoDrawResultResponse.getData().getList();
+            for(LottoDrawResultResponse.DrawItem item : list){
+                LottoResultParam lottoResultParam = item.makeParam();
+                dhLotteryMasterMapper.lottoDrawResultIns(lottoResultParam);
+            }
+        }
+
         return lottoDrawResultResponse;
     }
 

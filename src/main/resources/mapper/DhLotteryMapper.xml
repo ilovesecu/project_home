@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ilovepc.project_home.repository.DhLotteryMasterMapper">
+    <resultMap id="LottoDrawResultMap" type="com.ilovepc.project_home.web.dhlottery.vo.result.LottoDrawVOResult">
+    <id property="ltEpsd" column="lt_epsd"/>
+    <result property="ltRflYmd" column="lt_rfl_ymd"/>
+    <result property="gmSqNo" column="gm_sq_no"/>
+    <result property="tm1WnNo" column="tm1_wn_no"/>
+    <result property="tm2WnNo" column="tm2_wn_no"/>
+    <result property="tm3WnNo" column="tm3_wn_no"/>
+    <result property="tm4WnNo" column="tm4_wn_no"/>
+    <result property="tm5WnNo" column="tm5_wn_no"/>
+    <result property="tm6WnNo" column="tm6_wn_no"/>
+    <result property="bnsWnNo" column="bns_wn_no"/>
+
+    <association property="stats" javaType="com.ilovepc.project_home.web.dhlottery.vo.result.LottoDrawVOResult$LottoStatsVO">
+        <result property="sumWnNope" column="sum_wn_nope"/>
+        <result property="rlvtEpsdSumNtslAmt" column="rlvt_epsd_sum_ntsl_amt"/>
+        <result property="wholEpsdSumNtslAmt" column="whol_epsd_sum_ntsl_amt"/>
+        <result property="winType0" column="win_type_0"/>
+        <result property="winType1" column="win_type_1"/>
+        <result property="winType2" column="win_type_2"/>
+        <result property="winType3" column="win_type_3"/>
+    </association>
+
+    <collection property="ranks" ofType="com.ilovepc.project_home.web.dhlottery.vo.result.LottoDrawVOResult$LottoRankVO">
+        <result property="rankNo" column="rank_no"/>
+        <result property="winnerCount" column="winner_count"/>
+        <result property="winAmt" column="win_amt"/>
+        <result property="sumWinAmt" column="sum_win_amt"/>
+    </collection>
+</resultMap>
+
+    <select id="selectLottoDrawResult" resultMap="LottoDrawResultMap">
+        SELECT
+        d.lt_epsd, d.lt_rfl_ymd, d.gm_sq_no,
+        d.tm1_wn_no, d.tm2_wn_no, d.tm3_wn_no, d.tm4_wn_no, d.tm5_wn_no, d.tm6_wn_no, d.bns_wn_no,
+        s.sum_wn_nope, s.rlvt_epsd_sum_ntsl_amt, s.whol_epsd_sum_ntsl_amt,
+        s.win_type_0, s.win_type_1, s.win_type_2, s.win_type_3,
+        r.rank_no, r.winner_count, r.win_amt, r.sum_win_amt
+        FROM home_project.lotto_draw_result d
+        LEFT JOIN home_project.lotto_draw_stats s ON d.lt_epsd = s.lt_epsd
+        LEFT JOIN home_project.lotto_draw_rank r ON d.lt_epsd = r.lt_epsd
+        WHERE d.lt_epsd = #{ltEpsd}
+        ORDER BY r.rank_no ASC
+    </select>
+
+</mapper>

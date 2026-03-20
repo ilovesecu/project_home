@@ -1,6 +1,7 @@
 package com.ilovepc.project_home.web.dhlottery.vo.response.drawInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ilovepc.project_home.web.dhlottery.vo.param.LottoResultParam;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -82,6 +83,60 @@ public class LottoDrawResultResponse {
 
         public List<Integer> getWinningAllNumbers(){
             return Arrays.asList(tm1WnNo, tm2WnNo, tm3WnNo, tm4WnNo, tm5WnNo, tm6WnNo, bnsWnNo);
+        }
+
+        public LottoResultParam makeParam(){
+            return LottoResultParam.builder()
+                    // 🗓️ [기본 정보]
+                    .ltEpsd(ltEpsd)
+                    .ltRflYmd(ltRflYmd)
+                    .gmSqNo(gmSqNo)
+
+                    // 🎱 [당첨 번호]
+                    .tm1WnNo(tm1WnNo)
+                    .tm2WnNo(tm2WnNo)
+                    .tm3WnNo(tm3WnNo)
+                    .tm4WnNo(tm4WnNo)
+                    .tm5WnNo(tm5WnNo)
+                    .tm6WnNo(tm6WnNo)
+                    .bnsWnNo(bnsWnNo)
+
+                    // 🥇 [1등 당첨 정보]
+                    .rnk1WnNope(rnk1WnNope)
+                    .rnk1WnAmt(rnk1WnAmt)
+                    .rnk1SumWnAmt(rnk1SumWnAmt)
+
+                    // 🥈 [2등 당첨 정보]
+                    .rnk2WnNope(rnk2WnNope)
+                    .rnk2WnAmt(rnk2WnAmt)
+                    .rnk2SumWnAmt(rnk2SumWnAmt)
+
+                    // 🥉 [3등 당첨 정보]
+                    .rnk3WnNope(rnk3WnNope)
+                    .rnk3WnAmt(rnk3WnAmt)
+                    .rnk3SumWnAmt(rnk3SumWnAmt)
+
+                    // 🏅 [4등 당첨 정보]
+                    .rnk4WnNope(rnk4WnNope)
+                    .rnk4WnAmt(rnk4WnAmt)
+                    .rnk4SumWnAmt(rnk4SumWnAmt)
+
+                    // 🏅 [5등 당첨 정보]
+                    .rnk5WnNope(rnk5WnNope)
+                    .rnk5WnAmt(rnk5WnAmt)
+                    .rnk5SumWnAmt(rnk5SumWnAmt)
+
+                    // 📊 [전체 통계 및 게임 타입]
+                    .sumWnNope(sumWnNope)
+                    .rlvtEpsdSumNtslAmt(rlvtEpsdSumNtslAmt)
+                    .wholEpsdSumNtslAmt(wholEpsdSumNtslAmt)
+
+                    .winType0(winType0)
+                    .winType1(winType1)
+                    .winType2(winType2)
+                    .winType3(winType3)
+                    .build();
+
         }
     }
 }
