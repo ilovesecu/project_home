@@ -32,4 +32,31 @@
             )
         </foreach>
     </insert>
+
+    <select id="selectTransactionHistories"
+            resultType="com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult">
+        SELECT
+            id,
+            transaction_at,
+            description,
+            transaction_type,
+            transaction_institution,
+            account_number,
+            amount,
+            balance_after,
+            memo
+        FROM home_project.transaction_history
+        WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
+          AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
+        ORDER BY transaction_at DESC, id DESC
+        LIMIT #{searchParam.limit}
+        OFFSET #{searchParam.offset}
+    </select>
+
+    <select id="countTransactionHistories" resultType="int">
+        SELECT COUNT(*)
+        FROM home_project.transaction_history
+        WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
+          AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
+    </select>
 </mapper>
