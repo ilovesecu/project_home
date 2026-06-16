@@ -31,11 +31,10 @@ public class PraiseStickerController {
     }
 
     @PostMapping("/sticker")
-    public ApiResponse<StampStickerResult> stampSticker(@Valid @RequestBody StampStickerRequest stampStickerRequest, BindingResult result,
+    public ApiResponse<?> stampSticker(@Valid @RequestBody StampStickerRequest stampStickerRequest, BindingResult result,
                                                         @AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails){
         log.error("이 사람이 요청함:",homeProjectUserDetails.getUsername());
-        StampStickerResult stampStickerResult = praiseStickerService.stampSticker(stampStickerRequest, homeProjectUserDetails);
-        return ApiResponse.success(stampStickerResult);
+        return praiseStickerService.stampSticker(stampStickerRequest, homeProjectUserDetails);
     }
 
     @GetMapping("/boardSticker")
@@ -43,5 +42,14 @@ public class PraiseStickerController {
         List<BoardResult> boardSticker = praiseStickerService.getBoardSticker();
         log.error("이 사람이 요청함 boardSticker:{}",homeProjectUserDetails.getUsername());
         return ApiResponse.success(boardSticker);
+    }
+
+    @DeleteMapping("/stickers")
+    public ApiResponse<?> deleteBoardSticker(@AuthenticationPrincipal HomeProjectUserDetails homeProjectUserDetails,
+                                             @RequestParam("boardId")int boardId,
+                                             @RequestParam("slotIds")int[] slotIds){
+        log.error("boardId", boardId);
+        log.error("slotIds", slotIds);
+        return null;
     }
 }

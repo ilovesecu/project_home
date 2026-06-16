@@ -1,5 +1,7 @@
 package com.ilovepc.project_home.web.sticker.service;
 
+import com.ilovepc.project_home.common.vo.ApiResponse;
+import com.ilovepc.project_home.common.vo.CommonErrCode;
 import com.ilovepc.project_home.config.security.vo.HomeProjectUserDetails;
 import com.ilovepc.project_home.repository.PraiseStickerMapper;
 import com.ilovepc.project_home.web.sticker.vo.*;
@@ -21,10 +23,14 @@ public class PraiseStickerService {
         return this.createBoardCommon(boardRequest.buildParam(userNo));
     }
 
-    public StampStickerResult stampSticker(StampStickerRequest stampStickerRequest, HomeProjectUserDetails homeProjectUserDetails){
-        int userNo = homeProjectUserDetails.getUserNo();
-        StampStickerResult stampStickerResult = this.stampStickerCommon(stampStickerRequest.buildParam(userNo));
-        return stampStickerResult;
+    public ApiResponse<?> stampSticker(StampStickerRequest stampStickerRequest, HomeProjectUserDetails homeProjectUserDetails){
+        try{
+            int userNo = homeProjectUserDetails.getUserNo();
+            StampStickerResult stampStickerResult = this.stampStickerCommon(stampStickerRequest.buildParam(userNo));
+            return ApiResponse.success(stampStickerResult);
+        }catch (Exception e){
+            return ApiResponse.fail(CommonErrCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+        }
     }
 
     public List<BoardResult> getBoardSticker(){
