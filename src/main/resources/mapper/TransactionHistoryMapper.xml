@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ilovepc.project_home.repository.TransactionHistoryMapper">
+    <insert id="insertTransactionHistories" parameterType="java.util.List">
+        INSERT INTO home_project.transaction_history (
+            transaction_at,
+            description,
+            transaction_type,
+            transaction_institution,
+            account_number,
+            amount,
+            balance_after,
+            memo,
+            source_file_name,
+            source_row_number
+        )
+        VALUES
+        <foreach collection="transactionHistories" item="item" separator=",">
+            (
+                #{item.transactionAt},
+                #{item.description},
+                #{item.transactionType},
+                #{item.transactionInstitution},
+                #{item.accountNumber},
+                #{item.amount},
+                #{item.balanceAfter},
+                #{item.memo},
+                #{item.sourceFileName},
+                #{item.sourceRowNumber}
+            )
+        </foreach>
+    </insert>
+</mapper>
