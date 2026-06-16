@@ -1,4 +1,4 @@
-package com.ilovepc.project_home.web.todo.vo;
+package com.ilovepc.project_home.web.todo.vo.response;
 
 import lombok.Builder;
 import lombok.Data;

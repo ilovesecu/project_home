@@ -4,6 +4,8 @@ import com.ilovepc.project_home.repository.ProjectMasterMapper;
 import com.ilovepc.project_home.web.todo.vo.*;
 import com.ilovepc.project_home.web.todo.vo.react.TodoInsertResultInfo;
 import com.ilovepc.project_home.web.todo.vo.react.TodoKeywordInsResultInfo;
+import com.ilovepc.project_home.web.todo.vo.response.TodoBotUnfinishedResponse;
+import com.ilovepc.project_home.web.todo.vo.response.TodoMatterResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,16 @@ public class TodoService {
     public int deleteKeyword(int keywordId){
         this.deleteKeywordCommon(keywordId);
         return 1;
+    }
+
+    public TodoBotUnfinishedResponse getUnfinishedTodoListAll(){
+        List<TodoKeywordResult> unfinishedTodos = projectMasterMapper.getUnfinishedTodos();
+        if(unfinishedTodos == null || unfinishedTodos.isEmpty()){ unfinishedTodos = new ArrayList<>(); }
+        log.error("unfinishedTodos : {}",unfinishedTodos);
+        return TodoBotUnfinishedResponse.builder()
+                .totalCnt(unfinishedTodos.size())
+                .unfinishedTodos(unfinishedTodos)
+                .build();
     }
 
     public TodoMatterResponse createTodosMatter(TodoMatterRequest todoMatterRequest){

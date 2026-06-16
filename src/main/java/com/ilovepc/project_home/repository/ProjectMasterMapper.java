@@ -43,4 +43,7 @@ public interface ProjectMasterMapper {
 
     @Select("CALL home_project.DeleteKeywordAndArchiveTasks(#{keywordId})")
     void deleteKeyword(@Param("keywordId")int keywordId);
+    
+    //아직 미완료된 할 일 리스트 가져오기
+    List<TodoKeywordResult> getUnfinishedTodos();
 }
