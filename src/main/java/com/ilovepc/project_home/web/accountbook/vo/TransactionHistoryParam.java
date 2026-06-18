@@ -20,4 +20,7 @@ public class TransactionHistoryParam {
     private String memo;
     private String sourceFileName;
     private Integer sourceRowNumber;
+    private Integer categoryId;
+    private String cashflowType;
+    private int isFixed;
 }

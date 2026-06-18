@@ -36,7 +36,8 @@ public class TransactionHistoryController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate endDate
     ){
-        transactionHistoryQueryService.transactionAmount(startDate, endDate);
+        //transactionHistoryQueryService.transactionAmount(startDate, endDate);
+        return null;
     }
 
 

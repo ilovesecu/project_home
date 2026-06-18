@@ -1,6 +1,7 @@
 package com.ilovepc.project_home.web.accountbook.service;
 
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
+import com.ilovepc.project_home.web.accountbook.vo.CashFlowType;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryParam;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionParseError;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionUploadResponse;
@@ -160,6 +161,7 @@ public class TransactionHistoryUploadService {
             if (row.length < 8) {
                 throw new IllegalArgumentException("필수 컬럼 수가 부족합니다. expected=8, actual=" + row.length);
             }
+            String memo = value(row,8);
 
             TransactionHistoryParam transaction = TransactionHistoryParam.builder()
                     .transactionAt(parseTransactionAt(value(row, 1)))
@@ -169,9 +171,12 @@ public class TransactionHistoryUploadService {
                     .accountNumber(value(row, 5))
                     .amount(parseAmount(value(row, 6), "거래 금액"))
                     .balanceAfter(parseAmount(value(row, 7), "거래 후 잔액"))
-                    .memo(value(row, 8))
+                    .memo(memo)
                     .sourceFileName(originalFileName)
                     .sourceRowNumber(rowNumber)
+                    .categoryId(null)
+                    .cashflowType(parseCashFlowType(memo).name())
+                    .isFixed(0) //고정지출, 고정수입 여부
                     .build();
             transactions.add(transaction);
         } catch (Exception e) {
@@ -199,6 +204,23 @@ public class TransactionHistoryUploadService {
             return LocalDateTime.parse(value, TOSS_DATE_FORMATTER);
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("거래 일시 형식이 올바르지 않습니다. value=" + value, e);
+        }
+    }
+
+    private CashFlowType parseCashFlowType(String memo){
+        if(org.apache.commons.lang3.StringUtils.isBlank(memo)){ return CashFlowType.NONE; }
+        if(memo.startsWith("[지출]")){
+            return CashFlowType.EXPENSE;
+        }else if(memo.startsWith("[저축]")){
+            return CashFlowType.SAVING;
+        }else if(memo.startsWith("[수입]")){
+            return CashFlowType.INCOME;
+        }else if(memo.startsWith("[투자]")){
+            return CashFlowType.INVESTMENT;
+        }else if(memo.startsWith("[기타]")){
+            return CashFlowType.ETC;
+        }else{
+            return CashFlowType.NONE;
         }
     }
 

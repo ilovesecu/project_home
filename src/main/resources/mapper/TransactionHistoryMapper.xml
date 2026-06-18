@@ -14,7 +14,10 @@
             balance_after,
             memo,
             source_file_name,
-            source_row_number
+            source_row_number,
+            category_id,
+            cashflow_type,
+            is_fixed
         )
         VALUES
         <foreach collection="transactionHistories" item="item" separator=",">
@@ -28,7 +31,10 @@
                 #{item.balanceAfter},
                 #{item.memo},
                 #{item.sourceFileName},
-                #{item.sourceRowNumber}
+                #{item.sourceRowNumber},
+                #{item.categoryId},
+                #{item.cashflowType},
+                #{item.isFixed}
             )
         </foreach>
     </insert>
