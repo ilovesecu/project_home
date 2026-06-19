@@ -4,6 +4,7 @@ import com.ilovepc.project_home.common.vo.ApiResponse;
 import com.ilovepc.project_home.web.accountbook.service.TransactionHistoryQueryService;
 import com.ilovepc.project_home.web.accountbook.service.TransactionHistoryUploadService;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistorySearchResponse;
+import com.ilovepc.project_home.web.accountbook.vo.TransactionSourceType;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionUploadResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,9 +76,17 @@ public class TransactionHistoryController {
             value = "/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ApiResponse<TransactionUploadResponse> upload(@RequestPart("file") MultipartFile file) {
-        log.info("TRANSACTION HISTORY UPLOAD COMMAND EXEC : originalFileName={}", file.getOriginalFilename());
-        TransactionUploadResponse response = transactionHistoryUploadService.upload(file);
+    public ApiResponse<TransactionUploadResponse> upload(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(value = "sourceType", required = false, defaultValue = "TOSS_BANK") String sourceType
+    ) {
+        TransactionSourceType transactionSourceType = TransactionSourceType.from(sourceType);
+        log.info(
+                "TRANSACTION HISTORY UPLOAD COMMAND EXEC : originalFileName={}, sourceType={}",
+                file.getOriginalFilename(),
+                transactionSourceType
+        );
+        TransactionUploadResponse response = transactionHistoryUploadService.upload(file, transactionSourceType);
         return ApiResponse.success(response);
     }
 }

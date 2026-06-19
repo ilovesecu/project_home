@@ -23,4 +23,7 @@ public class TransactionHistoryParam {
     private Integer categoryId;
     private String cashflowType;
     private int isFixed;
+    private String sourceType;
+    private String paymentMethod;
+    private String externalKey;
 }

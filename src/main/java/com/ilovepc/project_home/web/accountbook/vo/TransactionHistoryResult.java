@@ -17,4 +17,6 @@ public class TransactionHistoryResult {
     private Long amount;
     private Long balanceAfter;
     private String memo;
+    private String sourceType;
+    private String paymentMethod;
 }

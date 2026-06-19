@@ -17,7 +17,10 @@
             source_row_number,
             category_id,
             cashflow_type,
-            is_fixed
+            is_fixed,
+            source_type,
+            payment_method,
+            external_key
         )
         VALUES
         <foreach collection="transactionHistories" item="item" separator=",">
@@ -34,9 +37,24 @@
                 #{item.sourceRowNumber},
                 #{item.categoryId},
                 #{item.cashflowType},
-                #{item.isFixed}
+                #{item.isFixed},
+                #{item.sourceType},
+                #{item.paymentMethod},
+                #{item.externalKey}
             )
         </foreach>
+        ON DUPLICATE KEY UPDATE
+            description = VALUES(description),
+            transaction_type = VALUES(transaction_type),
+            transaction_institution = VALUES(transaction_institution),
+            account_number = VALUES(account_number),
+            amount = VALUES(amount),
+            balance_after = VALUES(balance_after),
+            memo = VALUES(memo),
+            category_id = VALUES(category_id),
+            cashflow_type = VALUES(cashflow_type),
+            is_fixed = VALUES(is_fixed),
+            payment_method = VALUES(payment_method)
     </insert>
 
     <select id="selectTransactionHistories"
@@ -50,7 +68,9 @@
             account_number,
             amount,
             balance_after,
-            memo
+            memo,
+            source_type,
+            payment_method
         FROM home_project.transaction_history
         WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
           AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
