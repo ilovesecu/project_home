@@ -27,6 +27,12 @@ class ProjectHomeApplicationTests {
         System.out.println("Encrypted: ENC(" + encryptedText + ")");
         System.out.println("Decrypted: " + decryptedText);
         System.out.println("------------------------------------");
+
+        String descText = "";
+        String plainText = stringEncryptor.decrypt(descText);
+        System.out.println("------------------------------------");
+        System.out.println("Decrypted: " + plainText);
+        System.out.println("------------------------------------");
     }
 
 }

@@ -5,6 +5,7 @@ public enum CashFlowType {
     ,EXPENSE("지출")
     ,INVESTMENT("투자")
     ,SAVING("저축")
+    ,TRANSFER("이체")
     ,ETC("기타")
     ,NONE("미분류")
     ;

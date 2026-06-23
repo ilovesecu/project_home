@@ -35,10 +35,12 @@ public class TransactionHistoryController {
             LocalDate startDate,
             @RequestParam(value = "endDate", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate endDate
+            LocalDate endDate,
+            @RequestParam(value = "month", required = false) String month,
+            @RequestParam(value = "limit", required = false, defaultValue = "200") int limit,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") int offset
     ){
-        //transactionHistoryQueryService.transactionAmount(startDate, endDate);
-        return null;
+        return search(startDate, endDate, month, limit, offset);
     }
 
 
@@ -53,6 +55,16 @@ public class TransactionHistoryController {
             @RequestParam(value = "month", required = false) String month,
             @RequestParam(value = "limit", required = false, defaultValue = "200") int limit,
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset
+    ) {
+        return search(startDate, endDate, month, limit, offset);
+    }
+
+    private ApiResponse<TransactionHistorySearchResponse> search(
+            LocalDate startDate,
+            LocalDate endDate,
+            String month,
+            int limit,
+            int offset
     ) {
         log.info(
                 "TRANSACTION HISTORY LIST COMMAND EXEC : startDate={}, endDate={}, month={}, limit={}, offset={}",

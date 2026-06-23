@@ -130,7 +130,7 @@ public class OnnuriGiftCardTransactionHistoryFileParser extends AbstractTransact
 
     private String createMemo(String[] row) {
         return String.format(
-                "[지출] 온누리상품권 / %s / %s / %s",
+                "[지출][변동][식비] @공동 온누리상품권 / %s / %s / %s",
                 value(row, 5),
                 value(row, 6),
                 value(row, 7)

@@ -20,7 +20,15 @@
             is_fixed,
             source_type,
             payment_method,
-            external_key
+            external_key,
+            recurrence_type,
+            memo_owner,
+            memo_body,
+            memo_target_year_month,
+            memo_parse_status,
+            memo_category_name,
+            classification_status,
+            fixed_status
         )
         VALUES
         <foreach collection="transactionHistories" item="item" separator=",">
@@ -40,7 +48,15 @@
                 #{item.isFixed},
                 #{item.sourceType},
                 #{item.paymentMethod},
-                #{item.externalKey}
+                #{item.externalKey},
+                #{item.recurrenceType},
+                #{item.memoOwner},
+                #{item.memoBody},
+                #{item.memoTargetYearMonth},
+                #{item.memoParseStatus},
+                #{item.memoCategoryName},
+                #{item.classificationStatus},
+                #{item.fixedStatus}
             )
         </foreach>
         ON DUPLICATE KEY UPDATE
@@ -54,8 +70,56 @@
             category_id = VALUES(category_id),
             cashflow_type = VALUES(cashflow_type),
             is_fixed = VALUES(is_fixed),
-            payment_method = VALUES(payment_method)
+            payment_method = VALUES(payment_method),
+            recurrence_type = VALUES(recurrence_type),
+            memo_owner = VALUES(memo_owner),
+            memo_body = VALUES(memo_body),
+            memo_target_year_month = VALUES(memo_target_year_month),
+            memo_parse_status = VALUES(memo_parse_status),
+            memo_category_name = VALUES(memo_category_name),
+            classification_status = VALUES(classification_status),
+            fixed_status = VALUES(fixed_status)
     </insert>
+
+    <insert id="upsertAccountCategories" parameterType="java.util.List">
+        INSERT INTO home_project.account_category (
+            parent_id,
+            cashflow_type,
+            name,
+            depth,
+            sort_order,
+            is_active
+        )
+        VALUES
+        <foreach collection="categories" item="item" separator=",">
+            (
+                NULL,
+                #{item.cashflowType},
+                #{item.name},
+                1,
+                #{item.sortOrder},
+                1
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            is_active = VALUES(is_active),
+            sort_order = LEAST(sort_order, VALUES(sort_order)),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="selectAccountCategories"
+            resultType="com.ilovepc.project_home.web.accountbook.vo.AccountCategoryResult">
+        SELECT
+            id,
+            cashflow_type,
+            name
+        FROM home_project.account_category
+        WHERE parent_id IS NULL
+          AND
+          <foreach collection="categories" item="item" open="(" separator=" OR " close=")">
+              (cashflow_type = #{item.cashflowType} AND name = #{item.name})
+          </foreach>
+    </select>
 
     <select id="selectTransactionHistories"
             resultType="com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult">
@@ -69,8 +133,19 @@
             amount,
             balance_after,
             memo,
+            category_id,
+            cashflow_type,
+            is_fixed,
             source_type,
-            payment_method
+            payment_method,
+            recurrence_type,
+            memo_owner,
+            memo_body,
+            memo_target_year_month,
+            memo_parse_status,
+            memo_category_name,
+            classification_status,
+            fixed_status
         FROM home_project.transaction_history
         WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
           AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}

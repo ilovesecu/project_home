@@ -12,5 +12,7 @@ public class TransactionUploadResponse {
     private Integer parsedCount;
     private Integer insertedCount;
     private Integer failedCount;
+    private Integer warningCount;
     private List<TransactionParseError> errors;
+    private List<TransactionParseError> warnings;
 }

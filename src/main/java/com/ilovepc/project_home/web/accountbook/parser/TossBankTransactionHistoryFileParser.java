@@ -182,6 +182,9 @@ public class TossBankTransactionHistoryFileParser extends AbstractTransactionHis
         if (memo.startsWith("[투자]")) {
             return CashFlowType.INVESTMENT;
         }
+        if (memo.startsWith("[이체]")) {
+            return CashFlowType.TRANSFER;
+        }
         if (memo.startsWith("[기타]")) {
             return CashFlowType.ETC;
         }

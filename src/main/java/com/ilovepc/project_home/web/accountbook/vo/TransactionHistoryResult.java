@@ -17,6 +17,17 @@ public class TransactionHistoryResult {
     private Long amount;
     private Long balanceAfter;
     private String memo;
+    private Long categoryId;
+    private String cashflowType;
+    private Integer isFixed;
     private String sourceType;
     private String paymentMethod;
+    private String recurrenceType;
+    private String memoOwner;
+    private String memoBody;
+    private String memoTargetYearMonth;
+    private String memoParseStatus;
+    private String memoCategoryName;
+    private String classificationStatus;
+    private String fixedStatus;
 }

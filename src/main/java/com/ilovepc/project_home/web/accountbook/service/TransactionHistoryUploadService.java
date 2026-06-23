@@ -1,6 +1,7 @@
 package com.ilovepc.project_home.web.accountbook.service;
 
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
+import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryParam;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionParseError;
@@ -25,27 +26,47 @@ public class TransactionHistoryUploadService {
 
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
+    private final TransactionMemoClassificationService transactionMemoClassificationService;
 
     @Transactional
     public TransactionUploadResponse upload(MultipartFile file, TransactionSourceType sourceType) {
+        /*
+        [파일 업로드]
+        → Toss/Onnuri 거래내역 파싱
+        → 규칙 시트 읽기
+        → 메모 파싱
+        → 카테고리 DB upsert
+        → 거래별 category_id 매핑
+        → transaction_history batch insert
+        */
+
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("업로드할 거래내역 파일이 비어 있습니다.");
         }
 
         String originalFileName = file.getOriginalFilename();
         List<TransactionParseError> errors = new ArrayList<>();
+        List<TransactionParseError> warnings = new ArrayList<>();
         AtomicInteger failedCount = new AtomicInteger();
         TransactionHistoryFileParser parser = findParser(sourceType, originalFileName);
         List<TransactionHistoryParam> transactions = parse(parser, file, originalFileName, errors, failedCount);
+        TransactionMemoClassificationResult classificationResult = transactionMemoClassificationService.classify(
+                file,
+                originalFileName,
+                transactions,
+                warnings
+        );
 
-        int insertedCount = insertBatch(transactions);
+        int insertedCount = insertBatch(classificationResult.transactions());
 
         return TransactionUploadResponse.builder()
                 .fileName(originalFileName)
                 .parsedCount(transactions.size())
                 .insertedCount(insertedCount)
                 .failedCount(failedCount.get())
+                .warningCount(classificationResult.warningCount())
                 .errors(errors)
+                .warnings(warnings)
                 .build();
     }
 
