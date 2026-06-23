@@ -16,7 +16,6 @@ public class MemoClassificationResult {
     private RecurrenceType recurrenceType;
     private String categoryName;
     private String memoOwner;
-    private String memoBody;
     private String memoTargetYearMonth;
 
     public boolean isParsed() {

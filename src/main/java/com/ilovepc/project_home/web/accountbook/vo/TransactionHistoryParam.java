@@ -28,10 +28,8 @@ public class TransactionHistoryParam {
     private String externalKey;
     private String recurrenceType;
     private String memoOwner;
-    private String memoBody;
     private String memoTargetYearMonth;
     private String memoParseStatus;
-    private String memoCategoryName;
     private String classificationStatus;
     private String fixedStatus;
 }

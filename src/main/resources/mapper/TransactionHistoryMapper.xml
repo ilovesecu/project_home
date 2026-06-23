@@ -23,10 +23,8 @@
             external_key,
             recurrence_type,
             memo_owner,
-            memo_body,
             memo_target_year_month,
             memo_parse_status,
-            memo_category_name,
             classification_status,
             fixed_status
         )
@@ -51,10 +49,8 @@
                 #{item.externalKey},
                 #{item.recurrenceType},
                 #{item.memoOwner},
-                #{item.memoBody},
                 #{item.memoTargetYearMonth},
                 #{item.memoParseStatus},
-                #{item.memoCategoryName},
                 #{item.classificationStatus},
                 #{item.fixedStatus}
             )
@@ -73,10 +69,8 @@
             payment_method = VALUES(payment_method),
             recurrence_type = VALUES(recurrence_type),
             memo_owner = VALUES(memo_owner),
-            memo_body = VALUES(memo_body),
             memo_target_year_month = VALUES(memo_target_year_month),
             memo_parse_status = VALUES(memo_parse_status),
-            memo_category_name = VALUES(memo_category_name),
             classification_status = VALUES(classification_status),
             fixed_status = VALUES(fixed_status)
     </insert>
@@ -140,10 +134,8 @@
             payment_method,
             recurrence_type,
             memo_owner,
-            memo_body,
             memo_target_year_month,
             memo_parse_status,
-            memo_category_name,
             classification_status,
             fixed_status
         FROM home_project.transaction_history

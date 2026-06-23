@@ -53,12 +53,12 @@ public class TransactionMemoClassificationService {
         WarningCollector warningCollector = new WarningCollector(warnings);
         AccountBookMemoRules rules = ruleSheetReader.read(file, originalFileName, warningCollector::add); //엑셀의 규칙/고정 시트 읽기
         Set<AccountCategoryParam> categoryParams = collectRuleCategoryParams(rules);
-        List<TransactionHistoryParam> classifiedTransactions = new ArrayList<>(transactions.size());
+        List<ClassifiedTransaction> classifiedTransactions = new ArrayList<>(transactions.size());
 
         for (TransactionHistoryParam transaction : transactions) {
             MemoClassificationResult result = memoParser.parse(transaction.getMemo(), rules);   //메모 파싱
             TransactionHistoryParam classifiedTransaction = applyClassification(transaction, result); //기존 param에 메모 관련 정보들 업데이트 해서 param을 다시 만들어준다.
-            classifiedTransactions.add(classifiedTransaction);
+            classifiedTransactions.add(new ClassifiedTransaction(classifiedTransaction, result));
 
             if (result.isParsed()) {
                 categoryParams.add(new AccountCategoryParam(
@@ -99,10 +99,8 @@ public class TransactionMemoClassificationService {
                 .cashflowType(result.getCashFlowType().name())
                 .recurrenceType(result.getRecurrenceType().name())
                 .memoOwner(result.getMemoOwner())
-                .memoBody(result.getMemoBody())
                 .memoTargetYearMonth(result.getMemoTargetYearMonth())
                 .memoParseStatus(MemoParseStatus.PARSED.name())
-                .memoCategoryName(result.getCategoryName())
                 .classificationStatus(ClassificationStatus.MANUAL.name())
                 .fixedStatus(fixed ? FixedStatus.MANUAL.name() : FixedStatus.NONE.name())
                 .isFixed(fixed ? 1 : 0)
@@ -139,13 +137,17 @@ public class TransactionMemoClassificationService {
     }
 
     private List<TransactionHistoryParam> mapCategoryIds(
-            List<TransactionHistoryParam> transactions,
+            List<ClassifiedTransaction> transactions,
             Map<String, AccountCategoryResult> categoryMap,
             WarningCollector warningCollector
     ) {
         List<TransactionHistoryParam> mappedTransactions = new ArrayList<>(transactions.size());
-        for (TransactionHistoryParam transaction : transactions) {
-            if (!StringUtils.hasText(transaction.getMemoCategoryName())
+        for (ClassifiedTransaction classifiedTransaction : transactions) {
+            TransactionHistoryParam transaction = classifiedTransaction.transaction();
+            MemoClassificationResult result = classifiedTransaction.result();
+
+            if (!result.isParsed()
+                    || !StringUtils.hasText(result.getCategoryName())
                     || !StringUtils.hasText(transaction.getCashflowType())) {
                 mappedTransactions.add(transaction);
                 continue;
@@ -153,7 +155,7 @@ public class TransactionMemoClassificationService {
 
             AccountCategoryResult category = categoryMap.get(categoryKey(
                     transaction.getCashflowType(),
-                    transaction.getMemoCategoryName()
+                    result.getCategoryName()
             ));
             if (category == null) {
                 warningCollector.add(
@@ -161,7 +163,7 @@ public class TransactionMemoClassificationService {
                         "카테고리 ID를 찾지 못했습니다. cashflowType="
                                 + transaction.getCashflowType()
                                 + ", categoryName="
-                                + transaction.getMemoCategoryName()
+                                + result.getCategoryName()
                 );
                 mappedTransactions.add(transaction);
                 continue;
@@ -173,6 +175,13 @@ public class TransactionMemoClassificationService {
                     .build());
         }
         return mappedTransactions;
+    }
+
+    //category_id 매핑 전까지 파싱 결과를 들고 가는 임시 컨텍스트
+    private record ClassifiedTransaction(
+            TransactionHistoryParam transaction,
+            MemoClassificationResult result
+    ) {
     }
 
     private String categoryKey(AccountCategoryResult category) {

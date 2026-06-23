@@ -68,7 +68,6 @@ public class AccountBookMemoParser {
                 .recurrenceType(recurrenceType)
                 .categoryName(categoryName)
                 .memoOwner(blankToNull(memoMatcher.group(2)))
-                .memoBody(blankToNull(memoMatcher.group(3)))
                 .memoTargetYearMonth(extractTargetYearMonth(trimmedMemo))   // [수입][고정][급여] @성은 2605 급여 와 같은 메모 안에서 2605 2606 같은 4자리 숫자를 찾는다.    ->         2605 -> 2026-05
                 .build();
     }

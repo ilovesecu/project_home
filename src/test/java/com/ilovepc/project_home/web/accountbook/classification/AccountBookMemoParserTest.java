@@ -27,7 +27,6 @@ class AccountBookMemoParserTest {
         assertThat(result.getRecurrenceType()).isEqualTo(RecurrenceType.VARIABLE);
         assertThat(result.getCategoryName()).isEqualTo("식비");
         assertThat(result.getMemoOwner()).isEqualTo("@공동");
-        assertThat(result.getMemoBody()).isEqualTo("온누리 결제 식료품");
     }
 
     @Test
