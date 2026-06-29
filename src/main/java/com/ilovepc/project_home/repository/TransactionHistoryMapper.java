@@ -3,6 +3,7 @@ package com.ilovepc.project_home.repository;
 import com.ilovepc.project_home.config.rdb.annotation.HomeMaster;
 import com.ilovepc.project_home.web.accountbook.vo.AccountCategoryParam;
 import com.ilovepc.project_home.web.accountbook.vo.AccountCategoryResult;
+import com.ilovepc.project_home.web.accountbook.vo.RecurrenceClassificationSummaryResult;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryParam;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult;
 import com.ilovepc.project_home.web.accountbook.vo.TransactionHistorySearchParam;
@@ -28,4 +29,20 @@ public interface TransactionHistoryMapper {
 
     //토스모임카드 예시용 10개 뽑아오기
     List<TransactionHistoryResult> selectExample10();
+
+    /**
+     * 같은 반복 패턴 키를 가진 과거 거래 예시를 조회합니다.
+     * MANUAL 분류를 우선으로 정렬해서 자동 메모 추천의 강한 근거로 사용합니다.
+     */
+    List<TransactionHistoryResult> selectClassificationEvidenceByPatternKey(
+            @Param("recurrencePatternKey") String recurrencePatternKey,
+            @Param("limit") int limit
+    );
+
+    /**
+     * 같은 반복 패턴 키 안에서 카테고리/주체/반복유형 조합별 누적 근거 개수를 조회합니다.
+     */
+    List<RecurrenceClassificationSummaryResult> selectClassificationSummaryByPatternKey(
+            @Param("recurrencePatternKey") String recurrencePatternKey
+    );
 }

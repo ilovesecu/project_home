@@ -18,6 +18,7 @@ public class TransactionHistoryResult {
     private Long balanceAfter;
     private String memo;
     private Long categoryId;
+    private String categoryName;
     private String cashflowType;
     private Integer isFixed;
     private String sourceType;
