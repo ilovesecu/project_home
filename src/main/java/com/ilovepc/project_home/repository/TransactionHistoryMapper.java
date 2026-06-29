@@ -22,4 +22,10 @@ public interface TransactionHistoryMapper {
     int upsertAccountCategories(@Param("categories") List<AccountCategoryParam> categories);
 
     List<AccountCategoryResult> selectAccountCategories(@Param("categories") List<AccountCategoryParam> categories);
+
+    //카테고리 뽑아오기(전체)
+    List<AccountCategoryResult> selectMakeMemoCategories();
+
+    //토스모임카드 예시용 10개 뽑아오기
+    List<TransactionHistoryResult> selectExample10();
 }

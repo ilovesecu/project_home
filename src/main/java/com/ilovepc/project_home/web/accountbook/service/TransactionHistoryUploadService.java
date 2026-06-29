@@ -2,11 +2,9 @@ package com.ilovepc.project_home.web.accountbook.service;
 
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
 import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
+import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoMakerService;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
-import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryParam;
-import com.ilovepc.project_home.web.accountbook.vo.TransactionParseError;
-import com.ilovepc.project_home.web.accountbook.vo.TransactionSourceType;
-import com.ilovepc.project_home.web.accountbook.vo.TransactionUploadResponse;
+import com.ilovepc.project_home.web.accountbook.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class TransactionHistoryUploadService {
     private static final int BATCH_SIZE = 5000;
-
+    private final TossMoimMemoMakerService tossMoimMemoMakerService;
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
     private final TransactionMemoClassificationService transactionMemoClassificationService;
@@ -68,6 +66,30 @@ public class TransactionHistoryUploadService {
                 .errors(errors)
                 .warnings(warnings)
                 .build();
+    }
+
+    public TransactionUploadResponse makeMemo(MultipartFile file, TransactionSourceType sourceType){
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("메모를 파싱할 거래내역 파일이 비어 있습니다.");
+        }
+        String originalFileName = file.getOriginalFilename();
+        List<TransactionParseError> errors = new ArrayList<>();
+        List<TransactionParseError> warnings = new ArrayList<>();
+        AtomicInteger failedCount = new AtomicInteger();
+        TransactionHistoryFileParser parser = findParser(sourceType, originalFileName);
+        try{
+            String[] strings = parser.parseMemo(file);
+            List<TransactionHistoryResult> transactionHistoryResults = transactionHistoryMapper.selectExample10();
+            //카테고리 가져오기
+            List<AccountCategoryResult> accountCategoryResults = transactionHistoryMapper.selectMakeMemoCategories();
+            tossMoimMemoMakerService.tossMoimMemoMaker(transactionHistoryResults,accountCategoryResults);
+        }catch (IOException ioException){
+            log.error("makeMemo IOException", ioException);
+        }
+
+        //List<TransactionHistoryParam> transactions = parse(parser, file, originalFileName, errors, failedCount);
+
+        return null;
     }
 
     private TransactionHistoryFileParser findParser(TransactionSourceType sourceType, String originalFileName) {

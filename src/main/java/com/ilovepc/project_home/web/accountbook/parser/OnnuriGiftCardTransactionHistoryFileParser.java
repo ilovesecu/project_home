@@ -35,6 +35,11 @@ public class OnnuriGiftCardTransactionHistoryFileParser extends AbstractTransact
     }
 
     @Override
+    public String[] parseMemo(MultipartFile file) {
+        return new String[]{};
+    }
+
+    @Override
     public List<TransactionHistoryParam> parse(
             MultipartFile file,
             String originalFileName,

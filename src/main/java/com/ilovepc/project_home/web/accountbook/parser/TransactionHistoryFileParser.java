@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public interface TransactionHistoryFileParser {
     boolean supports(TransactionSourceType sourceType, String fileName);
-
+    String[] parseMemo(MultipartFile file) throws IOException;
     List<TransactionHistoryParam> parse(
             MultipartFile file,
             String originalFileName,

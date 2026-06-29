@@ -115,6 +115,21 @@
           </foreach>
     </select>
 
+    <select id="selectMakeMemoCategories"
+            resultType="com.ilovepc.project_home.web.accountbook.vo.AccountCategoryResult">
+        SELECT
+            id,
+            cashflow_type,
+            name
+        FROM home_project.account_category
+        WHERE is_active = 1
+          AND parent_id IS NULL
+        ORDER BY
+            FIELD(cashflow_type, 'EXPENSE', 'INCOME', 'SAVING', 'INVESTMENT', 'TRANSFER', 'ETC'),
+            sort_order ASC,
+            name ASC
+    </select>
+
     <select id="selectTransactionHistories"
             resultType="com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult">
         SELECT
@@ -151,5 +166,33 @@
         FROM home_project.transaction_history
         WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
           AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
+    </select>
+
+    <!-- 토스모임카드 예시용 10개 뽑아오기 -->
+    <select id="selectExample10" resultType="com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult">
+        SELECT
+        th.id,
+        th.transaction_at,
+        th.description,
+        th.amount,
+        th.memo,
+        th.cashflow_type,
+        th.category_id,
+        ac.name AS category_name,
+        th.recurrence_type,
+        th.memo_owner,
+        th.classification_status
+        FROM home_project.transaction_history th
+        LEFT JOIN home_project.account_category ac
+        ON ac.id = th.category_id
+        WHERE
+        th.memo IS NOT NULL
+        AND th.memo <![CDATA[<>]]> ''
+        AND th.classification_status IN ('MANUAL', 'AUTO')
+        ORDER BY
+        CASE WHEN th.classification_status = 'MANUAL' THEN 0 ELSE 1 END,
+        th.transaction_at DESC,
+        th.id DESC
+        LIMIT 10;
     </select>
 </mapper>

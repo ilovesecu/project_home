@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 @RestController
@@ -90,7 +91,8 @@ public class TransactionHistoryController {
     )
     public ApiResponse<TransactionUploadResponse> upload(
             @RequestPart("file") MultipartFile file,
-            @RequestParam(value = "sourceType", required = false, defaultValue = "TOSS_BANK") String sourceType
+            @RequestParam(value = "sourceType", required = false, defaultValue = "TOSS_BANK") String sourceType,
+            @RequestParam(value= "makeMemo", required = false, defaultValue = "false")boolean makeMemo
     ) {
         TransactionSourceType transactionSourceType = TransactionSourceType.from(sourceType);
         log.info(
@@ -101,4 +103,23 @@ public class TransactionHistoryController {
         TransactionUploadResponse response = transactionHistoryUploadService.upload(file, transactionSourceType);
         return ApiResponse.success(response);
     }
+
+    @PostMapping(
+            value = "/makeMemo",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ApiResponse<TransactionUploadResponse> makeMemo(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(value = "sourceType", required = false, defaultValue = "TOSS_BANK") String sourceType
+    ) {
+        TransactionSourceType transactionSourceType = TransactionSourceType.from(sourceType);
+        log.info(
+                "TRANSACTION HISTORY MAKE MEMO COMMAND EXEC : originalFileName={}, sourceType={}",
+                file.getOriginalFilename(),
+                transactionSourceType
+        );
+        TransactionUploadResponse response = transactionHistoryUploadService.makeMemo(file, transactionSourceType);
+        return ApiResponse.success(response);
+    }
+
 }

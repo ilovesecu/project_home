@@ -41,6 +41,26 @@ public class TossBankTransactionHistoryFileParser extends AbstractTransactionHis
     }
 
     @Override
+    public String[] parseMemo(MultipartFile file) throws IOException {
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            if (workbook.getNumberOfSheets() == 0 || workbook.getSheetAt(0) == null) {
+                return new String[]{};
+            }
+            DataFormatter formatter = new DataFormatter(Locale.KOREA);
+            var sheet = workbook.getSheetAt(0);
+            String[] memos = new String[sheet.getLastRowNum()];
+            for (int rowIndex = HEADER_ROW_NUMBER; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row != null) {
+                    String memoCellValue = formatter.formatCellValue(row.getCell(8));
+                    memos[rowIndex] = memoCellValue;
+                }
+            }
+            return memos;
+        }
+    }
+
+    @Override
     public List<TransactionHistoryParam> parse(
             MultipartFile file,
             String originalFileName,
