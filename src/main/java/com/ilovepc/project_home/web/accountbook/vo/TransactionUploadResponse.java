@@ -15,4 +15,5 @@ public class TransactionUploadResponse {
     private Integer warningCount;
     private List<TransactionParseError> errors;
     private List<TransactionParseError> warnings;
+    private List<MakeMemoDecisionPreviewResult> makeMemoDecisionPreviews;
 }

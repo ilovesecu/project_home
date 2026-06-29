@@ -60,14 +60,26 @@ public class MemoKeywordExtractor {
     private static final Pattern INSTALLMENT_ROUND_PATTERN = Pattern.compile("\\d+\\s*회차");
 
     /**
+     * '@주체' 없이 적은 사람 이름 뒤에 붙는 조사만 제거합니다.
+     *
+     * 예시:
+     * - "성은이 청년도약적금" -> "청년도약적금"
+     * - "승주가 급여" -> "급여"
+     */
+    private static final Pattern LEADING_OWNER_PARTICLE_PATTERN = Pattern.compile("^(이|가|은|는|도|의)\\s*");
+
+    /**
      * 반복 키를 만들 때 핵심 물건/서비스명을 흔드는 부가 표현을 제거합니다.
      * 이 단어들은 메모 본문 의미 전체가 아니라 "같은 반복 거래인가"를 판단할 때만 불용어로 봅니다.
      *
      * 예시:
      * - "식세기할부" -> "식세기"
      * - "식세기무이자할부" -> "식세기"
+     * - "통신인터넷" -> "인터넷"
      */
     private static final List<String> RECURRENCE_KEYWORD_STOP_WORDS = List.of(
+            "통신비",
+            "통신",
             "무이자할부",
             "무이자",
             "할부",
@@ -94,6 +106,8 @@ public class MemoKeywordExtractor {
      * - "[지출] 냉장고(10/12)" -> "냉장고"
      * - "[지출] 엄마 대출상환 8회차" -> "엄마대출상환"
      * - "[지출] 식세기무이자할부" -> "식세기"
+     * - "[지출] 통신 인터넷 2606" -> "인터넷"
+     * - "[저축] 성은이 청년도약적금" -> "청년도약적금"
      */
     public String extract(String memo) {
         if (!StringUtils.hasText(memo)) {
@@ -131,7 +145,10 @@ public class MemoKeywordExtractor {
     private String removeLeadingOwnerWord(String keyword) {
         for (String ownerWord : LEADING_OWNER_WORDS) {
             if (keyword.startsWith(ownerWord)) {
-                return keyword.substring(ownerWord.length()).trim();
+                String withoutOwner = keyword.substring(ownerWord.length()).trim();
+                return LEADING_OWNER_PARTICLE_PATTERN.matcher(withoutOwner)
+                        .replaceFirst("")
+                        .trim();
             }
         }
 
@@ -147,6 +164,6 @@ public class MemoKeywordExtractor {
             refinedKeyword = refinedKeyword.replace(stopWord, "");
         }
 
-        return refinedKeyword;
+        return StringUtils.hasText(refinedKeyword) ? refinedKeyword : keyword;
     }
 }

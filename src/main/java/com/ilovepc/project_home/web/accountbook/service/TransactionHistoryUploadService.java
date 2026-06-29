@@ -2,8 +2,9 @@ package com.ilovepc.project_home.web.accountbook.service;
 
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
 import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
-import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoMakerService;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
+import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceAmountProfileCalculator;
+import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceDecisionService;
 import com.ilovepc.project_home.web.accountbook.recurrence.RecurrencePatternKeyGenerator;
 import com.ilovepc.project_home.web.accountbook.vo.*;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class TransactionHistoryUploadService {
     private static final int BATCH_SIZE = 5000;
-    private final TossMoimMemoMakerService tossMoimMemoMakerService;
+    private static final int MAKE_MEMO_EVIDENCE_LIMIT = 20;
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
     private final TransactionMemoClassificationService transactionMemoClassificationService;
     private final RecurrencePatternKeyGenerator recurrencePatternKeyGenerator;
+    private final RecurrenceAmountProfileCalculator recurrenceAmountProfileCalculator;
+    private final RecurrenceDecisionService recurrenceDecisionService;
 
     @Transactional
     public TransactionUploadResponse upload(MultipartFile file, TransactionSourceType sourceType) {
@@ -75,26 +78,35 @@ public class TransactionHistoryUploadService {
 
     public TransactionUploadResponse makeMemo(MultipartFile file, TransactionSourceType sourceType){
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("메모를 파싱할 거래내역 파일이 비어 있습니다.");
+            throw new IllegalArgumentException("메모를 만들 거래내역 파일이 비어 있습니다.");
         }
         String originalFileName = file.getOriginalFilename();
         List<TransactionParseError> errors = new ArrayList<>();
-        List<TransactionParseError> warnings = new ArrayList<>();
         AtomicInteger failedCount = new AtomicInteger();
         TransactionHistoryFileParser parser = findParser(sourceType, originalFileName);
-        try{
-            String[] strings = parser.parseMemo(file);
-            List<TransactionHistoryResult> transactionHistoryResults = transactionHistoryMapper.selectExample10();
-            //카테고리 가져오기
-            List<AccountCategoryResult> accountCategoryResults = transactionHistoryMapper.selectMakeMemoCategories();
-            tossMoimMemoMakerService.tossMoimMemoMaker(transactionHistoryResults,accountCategoryResults);
-        }catch (IOException ioException){
-            log.error("makeMemo IOException", ioException);
-        }
+        List<TransactionHistoryParam> transactions = parse(parser, file, originalFileName, errors, failedCount);
+        List<TransactionHistoryParam> recurrencePatternKeyAppliedTransactions = applyRecurrencePatternKeys(transactions);
+        List<MakeMemoDecisionPreviewResult> decisionPreviews = buildMakeMemoDecisionPreviews(
+                recurrencePatternKeyAppliedTransactions
+        );
 
-        //List<TransactionHistoryParam> transactions = parse(parser, file, originalFileName, errors, failedCount);
+        log.info(
+                "MAKE MEMO DECISION PREVIEW CREATED : fileName={}, parsedCount={}, previewCount={}",
+                originalFileName,
+                transactions.size(),
+                decisionPreviews.size()
+        );
 
-        return null;
+        return TransactionUploadResponse.builder()
+                .fileName(originalFileName)
+                .parsedCount(transactions.size())
+                .insertedCount(0)
+                .failedCount(failedCount.get())
+                .warningCount(0)
+                .errors(errors)
+                .warnings(List.of())
+                .makeMemoDecisionPreviews(decisionPreviews)
+                .build();
     }
 
     private TransactionHistoryFileParser findParser(TransactionSourceType sourceType, String originalFileName) {
@@ -145,5 +157,53 @@ public class TransactionHistoryUploadService {
                         .recurrencePatternKey(recurrencePatternKeyGenerator.generate(transaction))
                         .build())
                 .toList();
+    }
+
+    /**
+     * makeMemo 대상 거래마다 과거 근거, 금액 특징, 반복성 decision을 계산해 응답에서 확인할 수 있게 만듭니다.
+     */
+    private List<MakeMemoDecisionPreviewResult> buildMakeMemoDecisionPreviews(List<TransactionHistoryParam> transactions) {
+        if (transactions == null || transactions.isEmpty()) {
+            return List.of();
+        }
+
+        return transactions.stream()
+                .map(this::buildMakeMemoDecisionPreview)
+                .toList();
+    }
+
+    /**
+     * 거래 1건의 recurrencePatternKey를 기준으로 2~4단계 근거를 계산합니다.
+     */
+    private MakeMemoDecisionPreviewResult buildMakeMemoDecisionPreview(TransactionHistoryParam transaction) {
+        String recurrencePatternKey = transaction.getRecurrencePatternKey();
+        List<TransactionHistoryResult> evidenceTransactions =
+                transactionHistoryMapper.selectClassificationEvidenceByPatternKey(
+                        recurrencePatternKey,
+                        MAKE_MEMO_EVIDENCE_LIMIT
+                );
+        List<RecurrenceClassificationSummaryResult> classificationSummaries =
+                transactionHistoryMapper.selectClassificationSummaryByPatternKey(recurrencePatternKey);
+        RecurrenceAmountProfileResult amountProfile = recurrenceAmountProfileCalculator.calculate(
+                recurrencePatternKey,
+                evidenceTransactions
+        );
+        RecurrenceDecisionResult decision = recurrenceDecisionService.decide(
+                recurrencePatternKey,
+                evidenceTransactions,
+                classificationSummaries,
+                amountProfile
+        );
+
+        return MakeMemoDecisionPreviewResult.builder()
+                .sourceRowNumber(transaction.getSourceRowNumber())
+                .transactionAt(transaction.getTransactionAt())
+                .description(transaction.getDescription())
+                .amount(transaction.getAmount())
+                .memo(transaction.getMemo())
+                .recurrencePatternKey(recurrencePatternKey)
+                .amountProfile(amountProfile)
+                .decision(decision)
+                .build();
     }
 }
