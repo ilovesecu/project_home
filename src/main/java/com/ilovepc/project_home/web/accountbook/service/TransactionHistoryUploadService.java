@@ -4,6 +4,7 @@ import com.ilovepc.project_home.repository.TransactionHistoryMapper;
 import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
 import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoMakerService;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
+import com.ilovepc.project_home.web.accountbook.recurrence.RecurrencePatternKeyGenerator;
 import com.ilovepc.project_home.web.accountbook.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class TransactionHistoryUploadService {
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
     private final TransactionMemoClassificationService transactionMemoClassificationService;
+    private final RecurrencePatternKeyGenerator recurrencePatternKeyGenerator;
 
     @Transactional
     public TransactionUploadResponse upload(MultipartFile file, TransactionSourceType sourceType) {
@@ -55,7 +57,10 @@ public class TransactionHistoryUploadService {
                 warnings
         );
 
-        int insertedCount = insertBatch(classificationResult.transactions());
+        List<TransactionHistoryParam> recurrencePatternKeyAppliedTransactions = applyRecurrencePatternKeys(
+                classificationResult.transactions()
+        );
+        int insertedCount = insertBatch(recurrencePatternKeyAppliedTransactions);
 
         return TransactionUploadResponse.builder()
                 .fileName(originalFileName)
@@ -124,5 +129,21 @@ public class TransactionHistoryUploadService {
             insertedCount += transactionHistoryMapper.insertTransactionHistories(transactions.subList(start, end));
         }
         return insertedCount;
+    }
+
+    /**
+     * 업로드 저장 직전에 반복 패턴 키를 생성합니다.
+     * 메모 분류 결과가 반영된 뒤 생성해야 category/memo 기반 반복 후보 분석과 같은 기준을 사용할 수 있습니다.
+     */
+    private List<TransactionHistoryParam> applyRecurrencePatternKeys(List<TransactionHistoryParam> transactions) {
+        if (transactions == null || transactions.isEmpty()) {
+            return List.of();
+        }
+
+        return transactions.stream()
+                .map(transaction -> transaction.toBuilder()
+                        .recurrencePatternKey(recurrencePatternKeyGenerator.generate(transaction))
+                        .build())
+                .toList();
     }
 }

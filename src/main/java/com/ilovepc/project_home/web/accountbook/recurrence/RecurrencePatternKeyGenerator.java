@@ -21,7 +21,7 @@ public class RecurrencePatternKeyGenerator {
      * 금액 변동이 있는 급여, 부수입, 할부 거래도 같은 반복 후보로 묶이도록 금액은 제외하고 키를 생성합니다.
      */
     public String generate(String description, String memo) {
-        String descriptionToken = textNormalizer.normalize(description);
+        String descriptionToken = textNormalizer.normalizeDescription(description);
         if (!StringUtils.hasText(descriptionToken)) {
             descriptionToken = UNKNOWN_DESCRIPTION;
         }

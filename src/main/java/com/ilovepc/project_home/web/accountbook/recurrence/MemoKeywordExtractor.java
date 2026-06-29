@@ -60,6 +60,22 @@ public class MemoKeywordExtractor {
     private static final Pattern INSTALLMENT_ROUND_PATTERN = Pattern.compile("\\d+\\s*회차");
 
     /**
+     * 반복 키를 만들 때 핵심 물건/서비스명을 흔드는 부가 표현을 제거합니다.
+     * 이 단어들은 메모 본문 의미 전체가 아니라 "같은 반복 거래인가"를 판단할 때만 불용어로 봅니다.
+     *
+     * 예시:
+     * - "식세기할부" -> "식세기"
+     * - "식세기무이자할부" -> "식세기"
+     */
+    private static final List<String> RECURRENCE_KEYWORD_STOP_WORDS = List.of(
+            "무이자할부",
+            "무이자",
+            "할부",
+            "개월",
+            "회차"
+    );
+
+    /**
      * 과거 메모처럼 '@주체' 없이 사람 이름이 본문 앞에 붙은 경우를 정리하기 위한 단어 목록입니다.
      *
      * 예시:
@@ -77,6 +93,7 @@ public class MemoKeywordExtractor {
      * - "[지출][고정][보험] @성은 보험1 2606" -> "보험1"
      * - "[지출] 냉장고(10/12)" -> "냉장고"
      * - "[지출] 엄마 대출상환 8회차" -> "엄마대출상환"
+     * - "[지출] 식세기무이자할부" -> "식세기"
      */
     public String extract(String memo) {
         if (!StringUtils.hasText(memo)) {
@@ -101,8 +118,11 @@ public class MemoKeywordExtractor {
         // 6. '@주체' 없이 앞에 붙은 사람 이름 제거: "성은 보험1" -> "보험1"
         keyword = removeLeadingOwnerWord(keyword.trim());
 
-        // 7. 남은 공백/특수문자를 제거해 최종 키워드로 정규화: "엄마 대출상환 " -> "엄마대출상환"
-        return textNormalizer.normalize(keyword);
+        // 7. 남은 공백/특수문자를 제거해 비교 가능한 형태로 정규화: "엄마 대출상환 " -> "엄마대출상환"
+        keyword = textNormalizer.normalize(keyword);
+
+        // 8. 반복 키 전용 불용어 제거: "식세기무이자할부" -> "식세기"
+        return removeRecurrenceKeywordStopWords(keyword);
     }
 
     /**
@@ -116,5 +136,17 @@ public class MemoKeywordExtractor {
         }
 
         return keyword;
+    }
+
+    /**
+     * 반복 패턴을 나누지 않아도 되는 할부/무이자 같은 부가 표현을 제거합니다.
+     */
+    private String removeRecurrenceKeywordStopWords(String keyword) {
+        String refinedKeyword = keyword;
+        for (String stopWord : RECURRENCE_KEYWORD_STOP_WORDS) {
+            refinedKeyword = refinedKeyword.replace(stopWord, "");
+        }
+
+        return refinedKeyword;
     }
 }

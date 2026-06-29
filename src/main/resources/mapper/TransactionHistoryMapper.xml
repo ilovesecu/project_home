@@ -26,7 +26,8 @@
             memo_target_year_month,
             memo_parse_status,
             classification_status,
-            fixed_status
+            fixed_status,
+            recurrence_pattern_key
         )
         VALUES
         <foreach collection="transactionHistories" item="item" separator=",">
@@ -52,7 +53,8 @@
                 #{item.memoTargetYearMonth},
                 #{item.memoParseStatus},
                 #{item.classificationStatus},
-                #{item.fixedStatus}
+                #{item.fixedStatus},
+                #{item.recurrencePatternKey}
             )
         </foreach>
         ON DUPLICATE KEY UPDATE
@@ -72,7 +74,8 @@
             memo_target_year_month = VALUES(memo_target_year_month),
             memo_parse_status = VALUES(memo_parse_status),
             classification_status = VALUES(classification_status),
-            fixed_status = VALUES(fixed_status)
+            fixed_status = VALUES(fixed_status),
+            recurrence_pattern_key = VALUES(recurrence_pattern_key)
     </insert>
 
     <insert id="upsertAccountCategories" parameterType="java.util.List">
@@ -152,7 +155,8 @@
             memo_target_year_month,
             memo_parse_status,
             classification_status,
-            fixed_status
+            fixed_status,
+            recurrence_pattern_key
         FROM home_project.transaction_history
         WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
           AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
@@ -181,7 +185,8 @@
         ac.name AS category_name,
         th.recurrence_type,
         th.memo_owner,
-        th.classification_status
+        th.classification_status,
+        th.recurrence_pattern_key
         FROM home_project.transaction_history th
         LEFT JOIN home_project.account_category ac
         ON ac.id = th.category_id

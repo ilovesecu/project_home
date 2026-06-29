@@ -32,4 +32,5 @@ public class TransactionHistoryParam {
     private String memoParseStatus;
     private String classificationStatus;
     private String fixedStatus;
+    private String recurrencePatternKey;
 }

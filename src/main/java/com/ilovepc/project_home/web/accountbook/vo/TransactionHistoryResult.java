@@ -28,4 +28,5 @@ public class TransactionHistoryResult {
     private String memoParseStatus;
     private String classificationStatus;
     private String fixedStatus;
+    private String recurrencePatternKey;
 }
