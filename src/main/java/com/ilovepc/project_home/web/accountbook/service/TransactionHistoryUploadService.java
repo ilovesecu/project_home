@@ -2,6 +2,7 @@ package com.ilovepc.project_home.web.accountbook.service;
 
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
 import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
+import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoMakerService;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
 import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceAmountProfileCalculator;
 import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceDecisionService;
@@ -24,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TransactionHistoryUploadService {
     private static final int BATCH_SIZE = 5000;
     private static final int MAKE_MEMO_EVIDENCE_LIMIT = 20;
+    private final TossMoimMemoMakerService tossMoimMemoMakerService;
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
     private final TransactionMemoClassificationService transactionMemoClassificationService;
@@ -88,6 +90,13 @@ public class TransactionHistoryUploadService {
         List<TransactionHistoryParam> recurrencePatternKeyAppliedTransactions = applyRecurrencePatternKeys(transactions);
         List<MakeMemoDecisionPreviewResult> decisionPreviews = buildMakeMemoDecisionPreviews(
                 recurrencePatternKeyAppliedTransactions
+        );
+        List<TransactionHistoryResult> historicalExamples = transactionHistoryMapper.selectExample10();
+        List<AccountCategoryResult> accountCategoryResults = transactionHistoryMapper.selectMakeMemoCategories();
+        tossMoimMemoMakerService.tossMoimMemoMaker(
+                historicalExamples,
+                accountCategoryResults,
+                decisionPreviews
         );
 
         log.info(
