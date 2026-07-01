@@ -40,9 +40,26 @@ public interface TransactionHistoryMapper {
     );
 
     /**
+     * 엄격한 반복 패턴 키와 메모 중심 fallback 키를 함께 사용해서 과거 거래 예시를 조회합니다.
+     */
+    List<TransactionHistoryResult> selectClassificationEvidenceByPatternKeys(
+            @Param("recurrencePatternKey") String recurrencePatternKey,
+            @Param("recurrenceFallbackKey") String recurrenceFallbackKey,
+            @Param("limit") int limit
+    );
+
+    /**
      * 같은 반복 패턴 키 안에서 카테고리/주체/반복유형 조합별 누적 근거 개수를 조회합니다.
      */
     List<RecurrenceClassificationSummaryResult> selectClassificationSummaryByPatternKey(
             @Param("recurrencePatternKey") String recurrencePatternKey
+    );
+
+    /**
+     * 엄격한 반복 패턴 키와 메모 중심 fallback 키를 함께 사용해서 분류 요약을 조회합니다.
+     */
+    List<RecurrenceClassificationSummaryResult> selectClassificationSummaryByPatternKeys(
+            @Param("recurrencePatternKey") String recurrencePatternKey,
+            @Param("recurrenceFallbackKey") String recurrenceFallbackKey
     );
 }

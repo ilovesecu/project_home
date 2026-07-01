@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TransactionHistoryUploadService {
     private static final int BATCH_SIZE = 5000;
     private static final int MAKE_MEMO_EVIDENCE_LIMIT = 20;
-    private static final int MAKE_MEMO_LLM_TARGET_LIMIT = 100;
+    private static final int MAKE_MEMO_LLM_TARGET_LIMIT = 10;
     private final TossMoimMemoMakerService tossMoimMemoMakerService;
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
@@ -167,6 +167,7 @@ public class TransactionHistoryUploadService {
         return transactions.stream()
                 .map(transaction -> transaction.toBuilder()
                         .recurrencePatternKey(recurrencePatternKeyGenerator.generate(transaction))
+                        .recurrenceFallbackKey(recurrencePatternKeyGenerator.generateFallback(transaction))
                         .build())
                 .toList();
     }
@@ -205,13 +206,18 @@ public class TransactionHistoryUploadService {
      */
     private MakeMemoDecisionPreviewResult buildMakeMemoDecisionPreview(TransactionHistoryParam transaction) {
         String recurrencePatternKey = transaction.getRecurrencePatternKey();
+        String recurrenceFallbackKey = transaction.getRecurrenceFallbackKey();
         List<TransactionHistoryResult> evidenceTransactions =
-                transactionHistoryMapper.selectClassificationEvidenceByPatternKey(
+                transactionHistoryMapper.selectClassificationEvidenceByPatternKeys(
                         recurrencePatternKey,
+                        recurrenceFallbackKey,
                         MAKE_MEMO_EVIDENCE_LIMIT
                 );
         List<RecurrenceClassificationSummaryResult> classificationSummaries =
-                transactionHistoryMapper.selectClassificationSummaryByPatternKey(recurrencePatternKey);
+                transactionHistoryMapper.selectClassificationSummaryByPatternKeys(
+                        recurrencePatternKey,
+                        recurrenceFallbackKey
+                );
         RecurrenceAmountProfileResult amountProfile = recurrenceAmountProfileCalculator.calculate(
                 recurrencePatternKey,
                 evidenceTransactions
@@ -230,6 +236,7 @@ public class TransactionHistoryUploadService {
                 .amount(transaction.getAmount())
                 .memo(transaction.getMemo())
                 .recurrencePatternKey(recurrencePatternKey)
+                .recurrenceFallbackKey(recurrenceFallbackKey)
                 .amountProfile(amountProfile)
                 .decision(decision)
                 .build();

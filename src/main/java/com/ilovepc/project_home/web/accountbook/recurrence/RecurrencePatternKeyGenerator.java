@@ -35,6 +35,18 @@ public class RecurrencePatternKeyGenerator {
     }
 
     /**
+     * 적요가 바뀌어도 같은 메모 핵심 키워드로 과거 근거를 찾기 위한 느슨한 fallback key를 생성합니다.
+     */
+    public String generateFallback(String memo) {
+        String memoKeyword = memoKeywordExtractor.extract(memo);
+        if (!StringUtils.hasText(memoKeyword)) {
+            return null;
+        }
+
+        return "MEMO:" + memoKeyword;
+    }
+
+    /**
      * 업로드 전에 만들어진 거래 파라미터에서 반복 패턴 키를 생성합니다.
      */
     public String generate(TransactionHistoryParam transaction) {
@@ -46,6 +58,17 @@ public class RecurrencePatternKeyGenerator {
     }
 
     /**
+     * 업로드 전에 만들어진 거래 파라미터에서 fallback key를 생성합니다.
+     */
+    public String generateFallback(TransactionHistoryParam transaction) {
+        if (transaction == null) {
+            return null;
+        }
+
+        return generateFallback(transaction.getMemo());
+    }
+
+    /**
      * DB에서 조회한 거래 결과에서 반복 패턴 키를 생성합니다.
      */
     public String generate(TransactionHistoryResult transaction) {
@@ -54,5 +77,16 @@ public class RecurrencePatternKeyGenerator {
         }
 
         return generate(transaction.getDescription(), transaction.getMemo());
+    }
+
+    /**
+     * DB에서 조회한 거래 결과에서 fallback key를 생성합니다.
+     */
+    public String generateFallback(TransactionHistoryResult transaction) {
+        if (transaction == null) {
+            return null;
+        }
+
+        return generateFallback(transaction.getMemo());
     }
 }

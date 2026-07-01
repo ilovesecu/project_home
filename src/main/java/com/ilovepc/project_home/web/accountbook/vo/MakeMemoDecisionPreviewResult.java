@@ -17,6 +17,7 @@ public class MakeMemoDecisionPreviewResult {
     private Long amount;
     private String memo;
     private String recurrencePatternKey;
+    private String recurrenceFallbackKey;
     private RecurrenceAmountProfileResult amountProfile;
     private RecurrenceDecisionResult decision;
 }

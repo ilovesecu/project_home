@@ -27,7 +27,8 @@
             memo_parse_status,
             classification_status,
             fixed_status,
-            recurrence_pattern_key
+            recurrence_pattern_key,
+            recurrence_fallback_key
         )
         VALUES
         <foreach collection="transactionHistories" item="item" separator=",">
@@ -54,7 +55,8 @@
                 #{item.memoParseStatus},
                 #{item.classificationStatus},
                 #{item.fixedStatus},
-                #{item.recurrencePatternKey}
+                #{item.recurrencePatternKey},
+                #{item.recurrenceFallbackKey}
             )
         </foreach>
         ON DUPLICATE KEY UPDATE
@@ -75,7 +77,8 @@
             memo_parse_status = VALUES(memo_parse_status),
             classification_status = VALUES(classification_status),
             fixed_status = VALUES(fixed_status),
-            recurrence_pattern_key = VALUES(recurrence_pattern_key)
+            recurrence_pattern_key = VALUES(recurrence_pattern_key),
+            recurrence_fallback_key = VALUES(recurrence_fallback_key)
     </insert>
 
     <insert id="upsertAccountCategories" parameterType="java.util.List">
@@ -157,7 +160,8 @@
             memo_parse_status,
             classification_status,
             fixed_status,
-            recurrence_pattern_key
+            recurrence_pattern_key,
+            recurrence_fallback_key
         FROM home_project.transaction_history
         WHERE transaction_at <![CDATA[>=]]> #{searchParam.startDateTime}
           AND transaction_at <![CDATA[<]]> #{searchParam.endDateTimeExclusive}
@@ -187,7 +191,8 @@
         th.recurrence_type,
         th.memo_owner,
         th.classification_status,
-        th.recurrence_pattern_key
+        th.recurrence_pattern_key,
+        th.recurrence_fallback_key
         FROM home_project.transaction_history th
         LEFT JOIN home_project.account_category ac
         ON ac.id = th.category_id
@@ -226,13 +231,59 @@
             th.memo_parse_status,
             th.classification_status,
             th.fixed_status,
-            th.recurrence_pattern_key
+            th.recurrence_pattern_key,
+            th.recurrence_fallback_key
         FROM home_project.transaction_history th
         LEFT JOIN home_project.account_category ac
             ON ac.id = th.category_id
         WHERE th.recurrence_pattern_key = #{recurrencePatternKey}
           AND th.classification_status IN ('MANUAL', 'AUTO')
         ORDER BY
+            CASE WHEN th.classification_status = 'MANUAL' THEN 0 ELSE 1 END,
+            th.transaction_at DESC,
+            th.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectClassificationEvidenceByPatternKeys"
+            resultType="com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult">
+        SELECT
+            th.id,
+            th.transaction_at,
+            th.description,
+            th.transaction_type,
+            th.transaction_institution,
+            th.account_number,
+            th.amount,
+            th.balance_after,
+            th.memo,
+            th.category_id,
+            ac.name AS category_name,
+            th.cashflow_type,
+            th.is_fixed,
+            th.source_type,
+            th.payment_method,
+            th.recurrence_type,
+            th.memo_owner,
+            th.memo_target_year_month,
+            th.memo_parse_status,
+            th.classification_status,
+            th.fixed_status,
+            th.recurrence_pattern_key,
+            th.recurrence_fallback_key
+        FROM home_project.transaction_history th
+        LEFT JOIN home_project.account_category ac
+            ON ac.id = th.category_id
+        WHERE (
+                th.recurrence_pattern_key = #{recurrencePatternKey}
+                OR (
+                    #{recurrenceFallbackKey} IS NOT NULL
+                    AND th.recurrence_fallback_key = #{recurrenceFallbackKey}
+                )
+            )
+          AND th.classification_status IN ('MANUAL', 'AUTO')
+        ORDER BY
+            CASE WHEN th.recurrence_pattern_key = #{recurrencePatternKey} THEN 0 ELSE 1 END,
             CASE WHEN th.classification_status = 'MANUAL' THEN 0 ELSE 1 END,
             th.transaction_at DESC,
             th.id DESC
@@ -265,6 +316,44 @@
             th.memo_owner,
             th.classification_status
         ORDER BY
+            CASE WHEN th.classification_status = 'MANUAL' THEN 0 ELSE 1 END,
+            evidence_count DESC,
+            latest_transaction_at DESC
+    </select>
+
+    <select id="selectClassificationSummaryByPatternKeys"
+            resultType="com.ilovepc.project_home.web.accountbook.vo.RecurrenceClassificationSummaryResult">
+        SELECT
+            th.recurrence_pattern_key,
+            th.cashflow_type,
+            th.category_id,
+            ac.name AS category_name,
+            th.recurrence_type,
+            th.memo_owner,
+            th.classification_status,
+            COUNT(*) AS evidence_count,
+            MAX(th.transaction_at) AS latest_transaction_at
+        FROM home_project.transaction_history th
+        LEFT JOIN home_project.account_category ac
+            ON ac.id = th.category_id
+        WHERE (
+                th.recurrence_pattern_key = #{recurrencePatternKey}
+                OR (
+                    #{recurrenceFallbackKey} IS NOT NULL
+                    AND th.recurrence_fallback_key = #{recurrenceFallbackKey}
+                )
+            )
+          AND th.classification_status IN ('MANUAL', 'AUTO')
+        GROUP BY
+            th.recurrence_pattern_key,
+            th.cashflow_type,
+            th.category_id,
+            ac.name,
+            th.recurrence_type,
+            th.memo_owner,
+            th.classification_status
+        ORDER BY
+            CASE WHEN th.recurrence_pattern_key = #{recurrencePatternKey} THEN 0 ELSE 1 END,
             CASE WHEN th.classification_status = 'MANUAL' THEN 0 ELSE 1 END,
             evidence_count DESC,
             latest_transaction_at DESC

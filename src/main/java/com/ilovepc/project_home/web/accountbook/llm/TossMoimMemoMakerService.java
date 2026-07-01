@@ -145,21 +145,29 @@ public class TossMoimMemoMakerService {
 
         return examples.stream()
                 .filter(Objects::nonNull)
-                .map(example -> Map.<String, Object>of(
-                        "transactionAt", nullToEmpty(example.getTransactionAt() == null
-                                ? null
-                                : example.getTransactionAt().toString()),
-                        "merchantName", nullToEmpty(example.getDescription()),
-                        "amount", example.getAmount() == null ? 0 : example.getAmount(),
-                        "memo", nullToEmpty(example.getMemo()),
-                        "recurrencePatternKey", recurrencePatternKeyGenerator.generate(example),
-                        "cashflowType", nullToEmpty(example.getCashflowType()),
-                        "categoryId", example.getCategoryId() == null ? 0 : example.getCategoryId(),
-                        "recurrenceType", nullToEmpty(example.getRecurrenceType()),
-                        "memoOwner", nullToEmpty(example.getMemoOwner()),
-                        "classificationStatus", nullToEmpty(example.getClassificationStatus())
-                ))
+                .map(this::normalizeExample)
                 .toList();
+    }
+
+    /**
+     * 과거 거래 예시 1건을 LLM 입력용 JSON 객체로 변환합니다.
+     */
+    private Map<String, Object> normalizeExample(TransactionHistoryResult example) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("transactionAt", nullToEmpty(example.getTransactionAt() == null
+                ? null
+                : example.getTransactionAt().toString()));
+        payload.put("merchantName", nullToEmpty(example.getDescription()));
+        payload.put("amount", example.getAmount() == null ? 0 : example.getAmount());
+        payload.put("memo", nullToEmpty(example.getMemo()));
+        payload.put("recurrencePatternKey", recurrencePatternKeyGenerator.generate(example));
+        payload.put("recurrenceFallbackKey", recurrencePatternKeyGenerator.generateFallback(example));
+        payload.put("cashflowType", nullToEmpty(example.getCashflowType()));
+        payload.put("categoryId", example.getCategoryId() == null ? 0 : example.getCategoryId());
+        payload.put("recurrenceType", nullToEmpty(example.getRecurrenceType()));
+        payload.put("memoOwner", nullToEmpty(example.getMemoOwner()));
+        payload.put("classificationStatus", nullToEmpty(example.getClassificationStatus()));
+        return payload;
     }
 
     /**
@@ -187,6 +195,7 @@ public class TossMoimMemoMakerService {
         payload.put("amount", target.getAmount() == null ? 0 : target.getAmount());
         payload.put("memo", nullToEmpty(target.getMemo()));
         payload.put("recurrencePatternKey", nullToEmpty(target.getRecurrencePatternKey()));
+        payload.put("recurrenceFallbackKey", nullToEmpty(target.getRecurrenceFallbackKey()));
         payload.put("amountProfile", normalizeAmountProfile(target.getAmountProfile()));
         payload.put("backendDecision", normalizeDecision(target.getDecision()));
         return payload;

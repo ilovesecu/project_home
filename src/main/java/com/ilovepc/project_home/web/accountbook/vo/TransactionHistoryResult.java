@@ -30,4 +30,5 @@ public class TransactionHistoryResult {
     private String classificationStatus;
     private String fixedStatus;
     private String recurrencePatternKey;
+    private String recurrenceFallbackKey;
 }
