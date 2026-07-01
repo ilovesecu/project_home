@@ -50,11 +50,11 @@ openai:
   timeout-ms: ${OPENAI_TIMEOUT_MS:30000}
 
 gemini:
-  api-key: ${GEMINI_API_KEY:AIzaSyA2EBuxKj4Me5_38ZaCEo9Uc6fEuogUIcU}
+  api-key: 'ENC(i2gP+3+DC9GG2bxtEuBPT5c4WEbTpw7fSEaPvOYj1R2rVdoiLkZybXNfjzhNJFQQmlsM7dirKj/cOL9C/4or1sq2qof73e2uAOhOsN7fyZU=)'
   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
   model: ${GEMINI_MODEL:gemini-3.5-flash}
   fallback-models: ${GEMINI_FALLBACK_MODELS:gemini-3.1-flash-lite,gemini-2.5-flash-lite}
-  timeout-ms: ${GEMINI_TIMEOUT_MS:50000}
+  timeout-ms: ${GEMINI_TIMEOUT_MS:120000}
 
 account-book:
   llm:

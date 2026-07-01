@@ -12,7 +12,9 @@ import com.ilovepc.project_home.web.accountbook.vo.TransactionHistoryResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,17 +39,17 @@ public class TossMoimMemoMakerService {
     /**
      * makeMemo 분류 요청에 필요한 입력값과 응답 스키마를 준비하는 서비스 진입점입니다.
      */
-    public void tossMoimMemoMaker(
+    public List<TossMoimMemoRecommendationResult> tossMoimMemoMaker(
             List<TransactionHistoryResult> example10,
             List<AccountCategoryResult> accountCategoryResults
     ) {
-        tossMoimMemoMaker(example10, accountCategoryResults, List.of());
+        return tossMoimMemoMaker(example10, accountCategoryResults, List.of());
     }
 
     /**
      * makeMemo 대상 거래와 백엔드 반복성 판단 근거까지 포함해 Gemini 입력값을 준비합니다.
      */
-    public void tossMoimMemoMaker(
+    public List<TossMoimMemoRecommendationResult> tossMoimMemoMaker(
             List<TransactionHistoryResult> example10,
             List<AccountCategoryResult> accountCategoryResults,
             List<MakeMemoDecisionPreviewResult> targetTransactions
@@ -63,10 +65,16 @@ public class TossMoimMemoMakerService {
                 targetTransactions == null ? 0 : targetTransactions.size(),
                 responseSchema.keySet()
         );
+        log.info("TOSS MOIM MEMO MAKER GEMINI PROMPT LENGTH={}", geminiInput.length());
+        log.info("TOSS MOIM MEMO MAKER GEMINI PROMPT={}", geminiInput);
         log.debug("TOSS MOIM MEMO MAKER GEMINI INPUT={}", geminiInput);
 
-        // TODO: Wire target transactions and parse Gemini response when makeMemo result DTO is decided.
-        // String outputText = geminiInteractionsClient.createStructuredResponse(geminiInput, responseSchema);
+        String outputText = geminiInteractionsClient.createStructuredResponse(geminiInput, responseSchema);
+        return parseAndValidateRecommendations(
+                outputText,
+                targetTransactions,
+                groupCategoriesByCashflowType(accountCategoryResults)
+        );
     }
 
     /**
@@ -256,6 +264,7 @@ public class TossMoimMemoMakerService {
                                         "type", "object",
                                         "additionalProperties", false,
                                         "required", List.of(
+                                                "sourceRowNumber",
                                                 "recommendedMemo",
                                                 "cashflowType",
                                                 "recurrenceType",
@@ -265,6 +274,7 @@ public class TossMoimMemoMakerService {
                                                 "reason"
                                         ),
                                         "properties", Map.of(
+                                                "sourceRowNumber", Map.of("type", "integer"),
                                                 "recommendedMemo", Map.of("type", "string"),
                                                 "cashflowType", Map.of("type", "string"),
                                                 "recurrenceType", Map.of("type", "string"),
@@ -277,6 +287,77 @@ public class TossMoimMemoMakerService {
                         )
                 )
         );
+    }
+
+    /**
+     * Gemini 응답 JSON을 추천 결과 목록으로 변환하고 허용값을 검증합니다.
+     */
+    private List<TossMoimMemoRecommendationResult> parseAndValidateRecommendations(
+            String outputText,
+            List<MakeMemoDecisionPreviewResult> targetTransactions,
+            Map<String, List<String>> allowedCategories
+    ) {
+        try {
+            TossMoimMemoMakerResponse response = objectMapper.readValue(
+                    outputText,
+                    TossMoimMemoMakerResponse.class
+            );
+            List<TossMoimMemoRecommendationResult> recommendations = response.items() == null
+                    ? List.of()
+                    : response.items();
+            validateRecommendations(recommendations, targetTransactions, allowedCategories);
+            return recommendations;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Toss makeMemo response is not valid JSON. response=" + outputText, e);
+        }
+    }
+
+    /**
+     * Gemini가 없는 행 번호, 허용되지 않은 주체/반복유형/카테고리를 반환하지 않았는지 확인합니다.
+     */
+    private void validateRecommendations(
+            List<TossMoimMemoRecommendationResult> recommendations,
+            List<MakeMemoDecisionPreviewResult> targetTransactions,
+            Map<String, List<String>> allowedCategories
+    ) {
+        List<Integer> targetRowNumbers = targetTransactions == null
+                ? List.of()
+                : targetTransactions.stream()
+                .filter(Objects::nonNull)
+                .map(MakeMemoDecisionPreviewResult::getSourceRowNumber)
+                .filter(Objects::nonNull)
+                .toList();
+
+        for (TossMoimMemoRecommendationResult recommendation : recommendations) {
+            if (recommendation == null) {
+                throw new IllegalStateException("Toss makeMemo response contains null item.");
+            }
+            if (!targetRowNumbers.isEmpty() && !targetRowNumbers.contains(recommendation.sourceRowNumber())) {
+                throw new IllegalStateException("LLM returned unknown sourceRowNumber. sourceRowNumber="
+                        + recommendation.sourceRowNumber());
+            }
+            if (!StringUtils.hasText(recommendation.recommendedMemo())) {
+                throw new IllegalStateException("LLM returned an empty recommendedMemo.");
+            }
+            if (!ALLOWED_OWNERS.contains(recommendation.memoOwner())) {
+                throw new IllegalStateException("LLM returned invalid memoOwner. memoOwner="
+                        + recommendation.memoOwner());
+            }
+            if (!ALLOWED_RECURRENCE_TYPES.contains(recommendation.recurrenceType())) {
+                throw new IllegalStateException("LLM returned invalid recurrenceType. recurrenceType="
+                        + recommendation.recurrenceType());
+            }
+            List<String> categories = allowedCategories.getOrDefault(
+                    recommendation.cashflowType(),
+                    Collections.emptyList()
+            );
+            if (!categories.contains(recommendation.categoryName())) {
+                throw new IllegalStateException("LLM returned invalid categoryName. cashflowType="
+                        + recommendation.cashflowType()
+                        + ", categoryName="
+                        + recommendation.categoryName());
+            }
+        }
     }
 
     /**

@@ -3,6 +3,7 @@ package com.ilovepc.project_home.web.accountbook.service;
 import com.ilovepc.project_home.repository.TransactionHistoryMapper;
 import com.ilovepc.project_home.web.accountbook.classification.TransactionMemoClassificationResult;
 import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoMakerService;
+import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoRecommendationResult;
 import com.ilovepc.project_home.web.accountbook.parser.TransactionHistoryFileParser;
 import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceAmountProfileCalculator;
 import com.ilovepc.project_home.web.accountbook.recurrence.RecurrenceDecisionService;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TransactionHistoryUploadService {
     private static final int BATCH_SIZE = 5000;
     private static final int MAKE_MEMO_EVIDENCE_LIMIT = 20;
+    private static final int MAKE_MEMO_LLM_TARGET_LIMIT = 100;
     private final TossMoimMemoMakerService tossMoimMemoMakerService;
     private final TransactionHistoryMapper transactionHistoryMapper;
     private final List<TransactionHistoryFileParser> transactionHistoryFileParsers;
@@ -93,10 +95,10 @@ public class TransactionHistoryUploadService {
         );
         List<TransactionHistoryResult> historicalExamples = transactionHistoryMapper.selectExample10();
         List<AccountCategoryResult> accountCategoryResults = transactionHistoryMapper.selectMakeMemoCategories();
-        tossMoimMemoMakerService.tossMoimMemoMaker(
+        List<TossMoimMemoRecommendationResult> recommendations = tossMoimMemoMakerService.tossMoimMemoMaker(
                 historicalExamples,
                 accountCategoryResults,
-                decisionPreviews
+                limitMakeMemoLlmTargets(decisionPreviews)
         );
 
         log.info(
@@ -114,7 +116,8 @@ public class TransactionHistoryUploadService {
                 .warningCount(0)
                 .errors(errors)
                 .warnings(List.of())
-                .makeMemoDecisionPreviews(decisionPreviews)
+                .makeMemoDecisionPreviews(decisionPreviews) //백엔드가 계산한 고정/변동 판단 근거 (지우지마)
+                .makeMemoRecommendations(recommendations) //Gemini가 추천한 최종 메모 (지우지마)
                 .build();
     }
 
@@ -178,6 +181,22 @@ public class TransactionHistoryUploadService {
 
         return transactions.stream()
                 .map(this::buildMakeMemoDecisionPreview)
+                .toList();
+    }
+
+    /**
+     * Gemini timeout 원인 확인을 위해 LLM에 보내는 대상 거래 수만 임시로 제한합니다.
+     * decision preview 응답은 전체를 유지합니다.
+     */
+    private List<MakeMemoDecisionPreviewResult> limitMakeMemoLlmTargets(
+            List<MakeMemoDecisionPreviewResult> decisionPreviews
+    ) {
+        if (decisionPreviews == null || decisionPreviews.isEmpty()) {
+            return List.of();
+        }
+
+        return decisionPreviews.stream()
+                .limit(MAKE_MEMO_LLM_TARGET_LIMIT)
                 .toList();
     }
 

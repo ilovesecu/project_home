@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ilovepc.project_home.config.gemini.GeminiProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GeminiInteractionsClient {
     private final GeminiProperties geminiProperties;
     private final ObjectMapper objectMapper;
@@ -30,6 +32,7 @@ public class GeminiInteractionsClient {
 
         List<String> models = resolveModels();
         IllegalStateException lastRetryableException = null;
+        log.info("GEMINI STRUCTURED RESPONSE MODEL CANDIDATES={}", models);
 
         for (String model : models) {
             try {
@@ -46,6 +49,7 @@ public class GeminiInteractionsClient {
 
     private String sendStructuredResponseRequest(String model, String input, Map<String, Object> responseSchema) {
         try {
+            log.info("GEMINI STRUCTURED RESPONSE REQUEST MODEL={}, inputLength={}", model, input.length());
             String body = objectMapper.writeValueAsString(Map.of(
                     "model", model,
                     "input", input,

@@ -3,6 +3,8 @@ package com.ilovepc.project_home.web.accountbook.vo;
 import lombok.Builder;
 import lombok.Getter;
 
+import com.ilovepc.project_home.web.accountbook.llm.TossMoimMemoRecommendationResult;
+
 import java.util.List;
 
 @Getter
@@ -16,4 +18,5 @@ public class TransactionUploadResponse {
     private List<TransactionParseError> errors;
     private List<TransactionParseError> warnings;
     private List<MakeMemoDecisionPreviewResult> makeMemoDecisionPreviews;
+    private List<TossMoimMemoRecommendationResult> makeMemoRecommendations;
 }
